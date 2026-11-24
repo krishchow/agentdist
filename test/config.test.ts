@@ -43,7 +43,7 @@ describe("toml editor", () => {
     const twice = toml.set(once, ["mcp_servers", "demo"], { command: "node", env: { B: "2" } });
     expect(toml.get(twice, ["mcp_servers", "demo"])).toEqual({ command: "node", env: { B: "2" } });
     expect(twice.match(/\[mcp_servers\.demo\]/g)).toHaveLength(1);
-    expect(toml.remove(twice, ["mcp_servers", "demo"]).trim()).toBe(before.trim());
+    expect(toml.remove(twice, ["mcp_servers", "demo"])).toBe(before);
   });
 
   it("accepts a table whose scalars come after its subtables", () => {

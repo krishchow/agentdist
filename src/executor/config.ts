@@ -229,7 +229,9 @@ const toml: ConfigEditor = {
         `${keyPath.join(".")} is defined inline rather than as a [table]; edit it by hand or move it to its own table`,
       );
     }
-    return next.replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "");
+    // The table was appended after a blank line; take that back out with it.
+    const tidy = next.replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "").trimEnd();
+    return tidy ? `${tidy}\n` : "";
   },
   isHollow: (text) => hollow(parseTomlText(text)),
 };
