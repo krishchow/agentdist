@@ -12,7 +12,8 @@ import { mcpConfig, stdioEntry } from "../src/surfaces/mcp";
 import { skillsDir } from "../src/surfaces/skills";
 import { demo, read, sandbox } from "./helpers";
 
-const types = (result: { actions: Array<{ type: string }> }) => [...new Set(result.actions.map((a) => a.type))].sort();
+const types = (result: { actions: Array<{ type: string }> }) =>
+  [...new Set(result.actions.map((a) => a.type))].sort();
 
 describe("install into Claude Code", () => {
   it("writes skills, agents, commands and the MCP entry at user scope", () => {
@@ -41,7 +42,9 @@ describe("install into Claude Code", () => {
     expect(read(env.home, ".claude/commands/demo-ship.md")).toContain("Ship $ARGUMENTS using /demo-ship-it.");
 
     expect(JSON.parse(read(env.home, ".claude.json"))).toEqual({
-      mcpServers: { demo: { type: "stdio", command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } } },
+      mcpServers: {
+        demo: { type: "stdio", command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } },
+      },
     });
     expect(status("demo", env).user?.harnesses).toEqual(["claude"]);
   });
@@ -104,7 +107,10 @@ describe("ownership", () => {
     const mine = join(env.home, ".claude/skills/demo-setup/SKILL.md");
     mkdirSync(dirname(mine), { recursive: true });
     writeFileSync(mine, "mine");
-    writeFileSync(join(env.home, ".claude.json"), JSON.stringify({ mcpServers: { demo: { command: "other" } } }));
+    writeFileSync(
+      join(env.home, ".claude.json"),
+      JSON.stringify({ mcpServers: { demo: { command: "other" } } }),
+    );
 
     const refused = install({ pkg: demo(), harnesses: [claude], scope: "user", env });
     expect(refused.applied).toBe(false);
@@ -148,7 +154,9 @@ describe("ownership", () => {
     writeFileSync(neighbour, "the prefix alone is not ownership");
 
     const next: Package = demo();
-    next.nodes = next.nodes.filter((n) => n.name !== "ship-it" && n.kind !== "mcpServer" && n.kind !== "command");
+    next.nodes = next.nodes.filter(
+      (n) => n.name !== "ship-it" && n.kind !== "mcpServer" && n.kind !== "command",
+    );
     const result = install({ pkg: next, harnesses: [claude], scope: "user", env });
     expect(result.applied).toBe(true);
     expect(existsSync(join(env.home, ".claude/skills/demo-ship-it"))).toBe(false);
@@ -195,7 +203,9 @@ describe("ownership", () => {
         }),
       },
     });
-    expect(() => install({ pkg: next, harnesses: [broken], scope: "user", env, registry: [broken] })).toThrow();
+    expect(() =>
+      install({ pkg: next, harnesses: [broken], scope: "user", env, registry: [broken] }),
+    ).toThrow();
     expect(read(skill)).toBe(before);
   });
 });
@@ -213,7 +223,12 @@ describe("harnesses that share a directory", () => {
         skill: skillsDir({ user: inHome(".agents", "skills"), local: inProject(".agents", "skills") }),
         agent: markdownAgents({ user: inConfig(agents), local: inConfig(agents) }),
         command: unsupported("no command surface"),
-        mcpServer: mcpConfig({ file: { user: inConfig("mcp.json") }, format: "json", keyPath: ["mcpServers"], entry: stdioEntry() }),
+        mcpServer: mcpConfig({
+          file: { user: inConfig("mcp.json") },
+          format: "json",
+          keyPath: ["mcpServers"],
+          entry: stdioEntry(),
+        }),
       },
       sources: [],
     });
@@ -227,7 +242,10 @@ describe("harnesses that share a directory", () => {
     const result = install({ pkg: demo(), harnesses: [alpha, beta], scope: "user", env, registry });
     const skill = join(env.home, ".agents/skills/demo-setup/SKILL.md");
     expect(result.actions.filter((a) => a.target === "~/.agents/skills/demo-setup/SKILL.md")).toHaveLength(1);
-    expect(status("demo", env).user?.files[".agents/skills/demo-setup/SKILL.md"]?.harnesses).toEqual(["alpha", "beta"]);
+    expect(status("demo", env).user?.files[".agents/skills/demo-setup/SKILL.md"]?.harnesses).toEqual([
+      "alpha",
+      "beta",
+    ]);
     expect(existsSync(join(env.home, ".alpha/agents/demo-reviewer.md"))).toBe(true);
     expect(existsSync(join(env.home, ".beta/droids/demo-reviewer.md"))).toBe(true);
 

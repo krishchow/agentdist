@@ -1,0 +1,89 @@
+import { z } from "zod";
+import { dialect } from "../harness/dialect";
+import type { Package } from "../ir/nodes";
+import { compactEntry } from "../surfaces/mcp";
+import { pluginContent } from "./content";
+import { json, type PackTarget } from "./types";
+
+const Options = z.strictObject({
+  /** Also write `.claude-plugin/marketplace.json`, making the repository its own marketplace. */
+  marketplace: z
+    .strictObject({ name: z.string().optional(), description: z.string().optional() })
+    .or(z.boolean())
+    .default(true),
+  /** Where rendered content goes when the package uses symbolic references. */
+  contentDir: z.string().default("plugins/claude"),
+});
+
+function mcpServers(pkg: Package) {
+  return Object.fromEntries(
+    pkg.nodes
+      .filter((n) => n.kind === "mcpServer")
+      .map((s) => [s.name, compactEntry({ command: s.command, args: s.args, env: s.env })]),
+  );
+}
+
+/**
+ * A Claude Code plugin: `.claude-plugin/plugin.json`, with the repository doubling as a
+ * single-plugin marketplace. https://code.claude.com/docs/en/plugins-reference
+ */
+export const claudePlugin: PackTarget = {
+  id: "claude-plugin",
+  label: "Claude Code plugin",
+  pack(pkg, raw) {
+    const options = Options.parse(raw);
+    const { manifest } = pkg;
+    const listing = manifest.listing;
+    const content = pluginContent(pkg, {
+      id: "claude-plugin",
+      outDir: options.contentDir,
+      // A plugin's servers and skills are namespaced by the plugin's name.
+      dialect: dialect({
+        toolRef: (server, tool) => `mcp__plugin_${pkg.name}_${server}__${tool}`,
+        skillRef: (name) => `/${pkg.name}:${name}`,
+        commandRef: (name) => `/${pkg.name}:${name}`,
+        agentRef: (name) => `\`${pkg.name}:${name}\``,
+      }),
+      showPath: (rel) => `\${CLAUDE_PLUGIN_ROOT}/${rel}`,
+    });
+    // Claude Code finds ./skills, ./agents and ./commands by itself; only other locations are named.
+    const elsewhere = (path: string | undefined, standard: string) =>
+      path && path !== standard ? path : undefined;
+    const servers = mcpServers(pkg);
+
+    const plugin = {
+      name: pkg.name,
+      version: pkg.version,
+      description: manifest.description,
+      author: listing?.author,
+      homepage: listing?.homepage,
+      repository: listing?.repository,
+      license: listing?.license,
+      keywords: listing?.keywords.length ? listing.keywords : undefined,
+      skills: elsewhere(content.skills, "./skills/"),
+      agents: elsewhere(content.agents, "./agents/"),
+      commands: elsewhere(content.commands, "./commands/"),
+      mcpServers: Object.keys(servers).length ? servers : undefined,
+    };
+    const files = [{ path: ".claude-plugin/plugin.json", content: json(plugin) }, ...content.files];
+
+    if (options.marketplace !== false) {
+      const market = options.marketplace === true ? {} : options.marketplace;
+      files.push({
+        path: ".claude-plugin/marketplace.json",
+        content: json({
+          name: market.name ?? pkg.name,
+          owner: listing?.author ? { name: listing.author.name } : undefined,
+          plugins: [
+            {
+              name: pkg.name,
+              source: "./",
+              description: market.description ?? listing?.shortDescription ?? manifest.description,
+            },
+          ],
+        }),
+      });
+    }
+    return { files, ownedDirs: content.ownedDirs };
+  },
+};

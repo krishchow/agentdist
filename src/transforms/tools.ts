@@ -21,7 +21,8 @@ function parseMcpGrant(grant: string, ctx: PlanCtx): McpGrant | undefined {
     const servers = ctx.pkg.nodes.filter((n) => n.kind === "mcpServer").map((n) => n.name);
     for (const server of servers.sort((a, b) => b.length - a.length)) {
       if (grant === `mcp__${server}`) return { server, tool: "*" };
-      if (grant.startsWith(`mcp__${server}__`)) return { server, tool: grant.slice(`mcp__${server}__`.length) };
+      if (grant.startsWith(`mcp__${server}__`))
+        return { server, tool: grant.slice(`mcp__${server}__`.length) };
     }
   }
   return undefined;

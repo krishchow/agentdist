@@ -48,13 +48,15 @@ describe("toml editor", () => {
 
   it("does not mistake a sibling with the same prefix for the table", () => {
     const text = toml.set(`[mcp_servers.demo-two]\ncommand = "y"\n`, ["mcp_servers", "demo"], entry);
-    expect(toml.get(toml.remove(text, ["mcp_servers", "demo"]), ["mcp_servers", "demo-two"])).toEqual({ command: "y" });
+    expect(toml.get(toml.remove(text, ["mcp_servers", "demo"]), ["mcp_servers", "demo-two"])).toEqual({
+      command: "y",
+    });
   });
 
   it("will not guess at an inline definition", () => {
-    expect(() => toml.remove(`mcp_servers = { demo = { command = "x" } }\n`, ["mcp_servers", "demo"])).toThrow(
-      /defined inline/,
-    );
+    expect(() =>
+      toml.remove(`mcp_servers = { demo = { command = "x" } }\n`, ["mcp_servers", "demo"]),
+    ).toThrow(/defined inline/);
   });
 });
 

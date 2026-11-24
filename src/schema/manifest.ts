@@ -7,7 +7,10 @@ export type Scope = z.infer<typeof Scope>;
 
 const identifier = z
   .string()
-  .regex(/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/, "lowercase letters, digits and single hyphens, starting with a letter");
+  .regex(
+    /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/,
+    "lowercase letters, digits and single hyphens, starting with a letter",
+  );
 
 /**
  * One MCP server the package wants registered with the harness.
@@ -39,7 +42,9 @@ export const Listing = z.strictObject({
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/)
     .optional(),
-  author: z.strictObject({ name: z.string(), email: z.string().optional(), url: z.string().optional() }).optional(),
+  author: z
+    .strictObject({ name: z.string(), email: z.string().optional(), url: z.string().optional() })
+    .optional(),
   homepage: z.string().optional(),
   repository: z.string().optional(),
   license: z.string().optional(),

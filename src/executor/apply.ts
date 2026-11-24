@@ -17,7 +17,7 @@ import type { Env } from "../harness/define";
 import { displayPath } from "../ops/plan";
 import type { ConfigFormat, Diagnostic, Plan } from "../ops/types";
 import type { Scope } from "../schema/manifest";
-import { canonicalJson, ConfigError, editorFor } from "./config";
+import { ConfigError, canonicalJson, editorFor } from "./config";
 import {
   fromLedgerPath,
   hashBytes,
@@ -180,7 +180,12 @@ export function applyInstall(options: InstallOptions): ApplyResult {
   });
 
   // ── Decide everything before writing anything ──────────────────────────────
-  const fileWrites: Array<{ path: string; content: string | Uint8Array; executable?: boolean; backup: boolean }> = [];
+  const fileWrites: Array<{
+    path: string;
+    content: string | Uint8Array;
+    executable?: boolean;
+    backup: boolean;
+  }> = [];
   const nextFiles: Ledger["files"] = {};
   for (const file of plan.files) {
     const key = toLedgerPath(file.path, root);
@@ -202,13 +207,24 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       actions.push({ type: owned ? "unchanged" : "adopt", target: show(file.path) });
     } else if (owned) {
       const edited = onDisk !== owned.hash;
-      actions.push({ type: "update", target: show(file.path), detail: edited ? "your edits were backed up" : undefined });
+      actions.push({
+        type: "update",
+        target: show(file.path),
+        detail: edited ? "your edits were backed up" : undefined,
+      });
       fileWrites.push({ ...file, backup: edited });
     } else if (options.force) {
-      actions.push({ type: "update", target: show(file.path), detail: "replaced a file that was not installed by this package; backed up" });
+      actions.push({
+        type: "update",
+        target: show(file.path),
+        detail: "replaced a file that was not installed by this package; backed up",
+      });
       fileWrites.push({ ...file, backup: true });
     } else {
-      conflicts.push({ target: show(file.path), reason: "already exists and was not installed by this package" });
+      conflicts.push({
+        target: show(file.path),
+        reason: "already exists and was not installed by this package",
+      });
     }
   }
 
@@ -218,7 +234,11 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     const path = fromLedgerPath(key, root);
     if (!existsSync(path)) continue;
     const edited = hashBytes(readFileSync(path)) !== entry.hash;
-    actions.push({ type: "remove", target: show(path), detail: edited ? "your edits were backed up" : undefined });
+    actions.push({
+      type: "remove",
+      target: show(path),
+      detail: edited ? "your edits were backed up" : undefined,
+    });
     staleFiles.push({ path, backup: edited });
   }
 
@@ -236,7 +256,8 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     const wanted = canonicalJson(config.value);
     const owned = previous?.configs.find((c) => sameKey(c, stored, config.keyPath));
     const createdFile =
-      owned?.createdFile ?? (previous?.configs.some((c) => c.path === stored && c.createdFile) || !existsSync(config.path));
+      owned?.createdFile ??
+      (previous?.configs.some((c) => c.path === stored && c.createdFile) || !existsSync(config.path));
     nextConfigs.push({
       path: stored,
       format: config.format,
@@ -265,10 +286,17 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       queue(config.path, config);
     } else if (options.force) {
       backupConfigs.add(config.path);
-      actions.push({ type: "update", target, detail: "replaced an entry that was not installed by this package; backed up" });
+      actions.push({
+        type: "update",
+        target,
+        detail: "replaced an entry that was not installed by this package; backed up",
+      });
       queue(config.path, config);
     } else {
-      conflicts.push({ target, reason: "an entry with this name already exists and was not installed by this package" });
+      conflicts.push({
+        target,
+        reason: "an entry with this name already exists and was not installed by this package",
+      });
     }
   }
 
@@ -280,7 +308,11 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     try {
       current = editorFor(entry.format).get(readText(path), entry.keyPath);
     } catch {
-      actions.push({ type: "keep", target, detail: "the file could not be parsed, so the entry was left in place" });
+      actions.push({
+        type: "keep",
+        target,
+        detail: "the file could not be parsed, so the entry was left in place",
+      });
       continue;
     }
     if (current === undefined) continue;
@@ -298,19 +330,25 @@ export function applyInstall(options: InstallOptions): ApplyResult {
   // ── Apply ──────────────────────────────────────────────────────────────────
   try {
     for (const write of fileWrites) {
-      if (write.backup) actions.push({ type: "backup", target: show(write.path), detail: show(txn.backup(write.path)) });
+      if (write.backup)
+        actions.push({ type: "backup", target: show(write.path), detail: show(txn.backup(write.path)) });
       txn.write(write.path, write.content, write.executable);
     }
     for (const stale of staleFiles) {
-      if (stale.backup) actions.push({ type: "backup", target: show(stale.path), detail: show(txn.backup(stale.path)) });
+      if (stale.backup)
+        actions.push({ type: "backup", target: show(stale.path), detail: show(txn.backup(stale.path)) });
       txn.remove(stale.path, root);
     }
     for (const [path, list] of edits) {
-      if (backupConfigs.has(path)) actions.push({ type: "backup", target: show(path), detail: show(txn.backup(path)) });
+      if (backupConfigs.has(path))
+        actions.push({ type: "backup", target: show(path), detail: show(txn.backup(path)) });
       let text = readText(path);
       for (const edit of list) {
         const editor = editorFor(edit.format);
-        text = edit.value === undefined ? editor.remove(text, edit.keyPath) : editor.set(text, edit.keyPath, edit.value as never);
+        text =
+          edit.value === undefined
+            ? editor.remove(text, edit.keyPath)
+            : editor.set(text, edit.keyPath, edit.value as never);
       }
       if (mayDelete.has(path) && editorFor(list[0]!.format).isHollow(text)) txn.remove(path, root);
       else txn.write(path, text);
@@ -405,7 +443,11 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       try {
         current = editor.get(text, entry.keyPath);
       } catch {
-        actions.push({ type: "keep", target, detail: "the file could not be parsed, so the entry was left in place" });
+        actions.push({
+          type: "keep",
+          target,
+          detail: "the file could not be parsed, so the entry was left in place",
+        });
         continue;
       }
       if (current === undefined) continue;

@@ -8,10 +8,10 @@
     "agentpkg": "dist/cli.js"
   },
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/types/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/src/index.d.ts",
       "import": "./dist/index.js"
     },
     "./schema.json": "./schema/agentpkg.schema.json"
@@ -25,7 +25,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsup && node scripts/gen-schema.mjs",
+    "build": "tsup && tsc -p tsconfig.build.json && node scripts/gen-schema.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",

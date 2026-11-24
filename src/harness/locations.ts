@@ -24,13 +24,22 @@ function fromEnv(env: Env, names: string[]): string | undefined {
 }
 
 /** Under the user's home directory, whatever the harness's own config directory is. */
-export const inHome = (...segments: string[]): Loc => ({ env }) => join(env.home, ...segments);
+export const inHome =
+  (...segments: string[]): Loc =>
+  ({ env }) =>
+    join(env.home, ...segments);
 
 /** Under the repository root. */
-export const inProject = (...segments: string[]): Loc => ({ env }) => join(env.projectRoot, ...segments);
+export const inProject =
+  (...segments: string[]): Loc =>
+  ({ env }) =>
+    join(env.projectRoot, ...segments);
 
 /** Under the harness's own config directory at the scope being planned. */
-export const inConfig = (...segments: string[]): Loc => ({ configRoot }) => join(configRoot, ...segments);
+export const inConfig =
+  (...segments: string[]): Loc =>
+  ({ configRoot }) =>
+    join(configRoot, ...segments);
 
 /** The usual "is it installed" test: the harness's user config directory exists. */
 export function configRootExists(root: (env: Env) => string): (env: Env) => boolean {

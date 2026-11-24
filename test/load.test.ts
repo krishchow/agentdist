@@ -53,7 +53,10 @@ describe("loadPackage", () => {
 
   it("reports every problem at once", () => {
     const dir = copy();
-    writeFileSync(join(dir, "skills", "ship-it", "SKILL.md"), "---\nname: other\n---\nUse {{tool:nope.x}} and {{skill:gone}}.\n");
+    writeFileSync(
+      join(dir, "skills", "ship-it", "SKILL.md"),
+      "---\nname: other\n---\nUse {{tool:nope.x}} and {{skill:gone}}.\n",
+    );
     writeFileSync(join(dir, "commands", "ship.md"), "Run {{skill_dir}}/x\n");
     const found = problems(dir);
     expect(found.join("\n")).toMatch(/skills\/ship-it\/SKILL.md → description/);

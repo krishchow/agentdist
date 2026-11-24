@@ -18,13 +18,15 @@ export type Ref =
   | { type: "skill" | "agent" | "command"; name: string }
   | { type: "skill_dir" | "pkg.name" | "pkg.version" };
 
-const REF = /\{\{\s*(?:(tool|skill|agent|command):([A-Za-z0-9_.-]+)|(skill_dir|pkg\.name|pkg\.version))\s*\}\}/g;
+const REF =
+  /\{\{\s*(?:(tool|skill|agent|command):([A-Za-z0-9_.-]+)|(skill_dir|pkg\.name|pkg\.version))\s*\}\}/g;
 
 function toRef(kind: string | undefined, target: string | undefined, bare: string | undefined): Ref | string {
   if (bare) return { type: bare as "skill_dir" | "pkg.name" | "pkg.version" };
   if (kind === "tool") {
     const dot = (target ?? "").indexOf(".");
-    if (dot <= 0 || dot === (target ?? "").length - 1) return `{{tool:${target}}} must be {{tool:<server>.<tool>}}`;
+    if (dot <= 0 || dot === (target ?? "").length - 1)
+      return `{{tool:${target}}} must be {{tool:<server>.<tool>}}`;
     return { type: "tool", server: target!.slice(0, dot), tool: target!.slice(dot + 1) };
   }
   return { type: kind as "skill" | "agent" | "command", name: target! };

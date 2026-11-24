@@ -76,18 +76,28 @@ function lineIndent(text: string, offset: number): string {
 }
 
 function pretty(value: JsonValue, indent: string, style: JsonStyle): string {
-  return JSON.stringify(value, null, style.unit).split("\n").join(style.eol + indent);
+  return JSON.stringify(value, null, style.unit)
+    .split("\n")
+    .join(style.eol + indent);
 }
 
 /**
  * Insert one property into an object node, touching nothing else. jsonc-parser's own formatter is
  * not used for this because it reformats the line before the insertion point.
  */
-function insertProperty(text: string, object: JsonNode, key: string, value: JsonValue, style: JsonStyle): string {
+function insertProperty(
+  text: string,
+  object: JsonNode,
+  key: string,
+  value: JsonValue,
+  style: JsonStyle,
+): string {
   const close = object.offset + object.length - 1;
   const last = object.children?.at(-1);
   const parentIndent = lineIndent(text, object.offset);
-  const indent = last ? lineIndent(text, last.offset) || parentIndent + style.unit : parentIndent + style.unit;
+  const indent = last
+    ? lineIndent(text, last.offset) || parentIndent + style.unit
+    : parentIndent + style.unit;
   const property = `${JSON.stringify(key)}: ${pretty(value, indent, style)}`;
   if (!last) {
     return `${text.slice(0, object.offset + 1)}${style.eol}${indent}${property}${style.eol}${parentIndent}${text.slice(close)}`;
@@ -115,7 +125,7 @@ function setJson(text: string, keyPath: string[], value: JsonValue): string {
     depth--;
     parent = findNodeAtLocation(tree, keyPath.slice(0, depth));
   }
-  if (!parent || parent.type !== "object") {
+  if (parent?.type !== "object") {
     throw new ConfigError(`${keyPath.slice(0, depth).join(".") || "top level"} is not an object`);
   }
   const key = keyPath[depth]!;
@@ -124,7 +134,11 @@ function setJson(text: string, keyPath: string[], value: JsonValue): string {
   const existing = findNodeAtLocation(tree, keyPath.slice(0, depth + 1));
   if (existing) {
     const indent = lineIndent(base, existing.parent?.offset ?? existing.offset);
-    return base.slice(0, existing.offset) + pretty(payload, indent, style) + base.slice(existing.offset + existing.length);
+    return (
+      base.slice(0, existing.offset) +
+      pretty(payload, indent, style) +
+      base.slice(existing.offset + existing.length)
+    );
   }
   return insertProperty(base, parent, key, payload, style);
 }
@@ -224,7 +238,8 @@ const toml: ConfigEditor = {
 
 function parseYamlText(text: string) {
   const doc = parseDocument(text);
-  if (doc.errors.length > 0) throw new ConfigError(`not valid YAML (${doc.errors[0]!.message.split("\n")[0]})`);
+  if (doc.errors.length > 0)
+    throw new ConfigError(`not valid YAML (${doc.errors[0]!.message.split("\n")[0]})`);
   return doc;
 }
 
@@ -257,7 +272,9 @@ export function editorFor(format: ConfigFormat): ConfigEditor {
 export function canonicalJson(value: unknown): string {
   return JSON.stringify(value, (_key, v) =>
     v !== null && typeof v === "object" && !Array.isArray(v)
-      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
+      ? Object.fromEntries(
+          Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
+        )
       : v,
   );
 }

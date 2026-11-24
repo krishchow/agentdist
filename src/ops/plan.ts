@@ -3,7 +3,14 @@ import type { Env, HarnessDef, PlanCtx } from "../harness/define";
 import { installedName, type Node, nodeId, type Package } from "../ir/nodes";
 import { type Ref, replaceRefs } from "../ir/refs";
 import type { Scope } from "../schema/manifest";
-import { type Claim, configKey, type Diagnostic, type Plan, type PlannedConfig, type PlannedFile } from "./types";
+import {
+  type Claim,
+  configKey,
+  type Diagnostic,
+  type Plan,
+  type PlannedConfig,
+  type PlannedFile,
+} from "./types";
 
 export function configRootOf(harness: HarnessDef, scope: Scope, env: Env): string {
   return scope === "user" ? harness.configRoot.user(env) : join(env.projectRoot, harness.configRoot.local);
@@ -17,7 +24,8 @@ function isInside(parent: string, child: string): boolean {
 /** A path as content should spell it: `~/…` under home, repo-relative in a project. */
 export function displayPath(abs: string, scope: Scope, env: Env): string {
   const posix = (p: string) => p.split(sep).join("/");
-  if (scope === "local" && isInside(env.projectRoot, abs)) return posix(relative(env.projectRoot, abs)) || ".";
+  if (scope === "local" && isInside(env.projectRoot, abs))
+    return posix(relative(env.projectRoot, abs)) || ".";
   if (isInside(env.home, abs)) return `~/${posix(relative(env.home, abs))}`;
   return posix(abs);
 }
@@ -30,7 +38,7 @@ export function makeCtx(
   warn: (message: string) => void,
 ): PlanCtx {
   const installed = (name: string) => installedName(pkg, name);
-  const show = (abs: string) => displayPath(abs, scope, env);
+  const show = (abs: string) => harness.showPath?.(abs, env) ?? displayPath(abs, scope, env);
   const renderRef = (ref: Ref, skillDir?: string): string => {
     switch (ref.type) {
       case "tool":
@@ -85,7 +93,9 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
 
     for (const node of pkg.nodes) {
       current = node;
-      const handler = harness.kinds[node.kind] as { plan(n: Node, c: PlanCtx): ReturnType<HarnessDef["kinds"]["skill"]["plan"]> };
+      const handler = harness.kinds[node.kind] as {
+        plan(n: Node, c: PlanCtx): ReturnType<HarnessDef["kinds"]["skill"]["plan"]>;
+      };
       const result = handler.plan(node, ctx);
       if (!Array.isArray(result)) {
         note("info", `skipped: ${result.skip}`);

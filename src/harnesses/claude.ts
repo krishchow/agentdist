@@ -18,7 +18,10 @@ export const claude = defineHarness({
   kinds: {
     skill: skillsDir({ user: inConfig("skills"), local: inConfig("skills") }),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }, { passthrough: true }),
-    command: markdownCommands({ user: inConfig("commands"), local: inConfig("commands") }, { passthrough: true }),
+    command: markdownCommands(
+      { user: inConfig("commands"), local: inConfig("commands") },
+      { passthrough: true },
+    ),
     mcpServer: mcpConfig({
       file: {
         // User-scope servers live in ~/.claude.json, which sits beside ~/.claude rather than in it

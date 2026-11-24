@@ -84,6 +84,11 @@ export interface HarnessDef {
   detect(env: Env): boolean;
   dialect: Dialect;
   kinds: { [K in NodeKind]: Handler<K> };
+  /**
+   * How content should spell an absolute path, when the default (`~/…` or repo-relative) is wrong
+   * because the harness relocates the files, as a plugin cache does.
+   */
+  showPath?: (abs: string, env: Env) => string;
   /** The documentation each path and shape in this file was checked against. */
   sources: string[];
 }

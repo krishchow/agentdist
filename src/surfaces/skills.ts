@@ -22,8 +22,14 @@ export function skillsDir(dir: ScopedLoc, options: SkillsDirOptions = {}): Handl
       const name = ctx.installed(node.name);
       const skillDir = join(base(ctx), name);
 
-      const convert = pipe(setFields({ name }), resolveRefs(ctx, skillDir), options.transform?.(node, ctx) ?? ((d) => d));
-      const ops: Op[] = [{ type: "file", path: join(skillDir, "SKILL.md"), content: renderDoc(convert(node.doc)) }];
+      const convert = pipe(
+        setFields({ name }),
+        resolveRefs(ctx, skillDir),
+        options.transform?.(node, ctx) ?? ((d) => d),
+      );
+      const ops: Op[] = [
+        { type: "file", path: join(skillDir, "SKILL.md"), content: renderDoc(convert(node.doc)) },
+      ];
       for (const file of node.files) {
         ops.push({
           type: "file",

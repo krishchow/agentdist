@@ -79,7 +79,9 @@ export function loadPackage(root: string): Package {
 
   const skillsDir = contentDir("skills");
   if (skillsDir) {
-    for (const entry of readdirSync(skillsDir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const entry of readdirSync(skillsDir, { withFileTypes: true }).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )) {
       if (!entry.isDirectory()) continue;
       const where = `${manifest.skills}/${entry.name}/${SKILL_FILE}`;
       const skillDir = join(skillsDir, entry.name);
@@ -109,7 +111,13 @@ export function loadPackage(root: string): Package {
               executable: (statSync(abs).mode & 0o111) !== 0,
             };
           });
-        nodes.push({ kind: "skill", name: entry.name, description: fm.data.description, doc, files } satisfies SkillNode);
+        nodes.push({
+          kind: "skill",
+          name: entry.name,
+          description: fm.data.description,
+          doc,
+          files,
+        } satisfies SkillNode);
       } catch (e) {
         problems.push(`${where}: ${(e as Error).message}`);
       }
@@ -128,7 +136,8 @@ export function loadPackage(root: string): Package {
           continue;
         }
         const name = file.slice(0, -3);
-        if (fm.data.name !== name) problems.push(`${where}: name "${fm.data.name}" must match its file name "${name}"`);
+        if (fm.data.name !== name)
+          problems.push(`${where}: name "${fm.data.name}" must match its file name "${name}"`);
         nodes.push({
           kind: "agent",
           name,
@@ -168,10 +177,12 @@ export function loadPackage(root: string): Package {
   }
 
   const version = manifest.version ?? packageJsonVersion(dir);
-  if (!version) problems.push(`${MANIFEST_FILE}: no "version", and no package.json beside it to take one from`);
+  if (!version)
+    problems.push(`${MANIFEST_FILE}: no "version", and no package.json beside it to take one from`);
 
   for (const [name, server] of Object.entries(manifest.mcpServers)) {
-    const fill = (s: string) => s.replaceAll("{{version}}", version ?? "").replaceAll("{{name}}", manifest.name);
+    const fill = (s: string) =>
+      s.replaceAll("{{version}}", version ?? "").replaceAll("{{name}}", manifest.name);
     nodes.push({
       kind: "mcpServer",
       name,
@@ -182,7 +193,10 @@ export function loadPackage(root: string): Package {
   }
 
   problems.push(...checkRefs(nodes));
-  if (manifest.onboardingSkill && !nodes.some((n) => n.kind === "skill" && n.name === manifest.onboardingSkill)) {
+  if (
+    manifest.onboardingSkill &&
+    !nodes.some((n) => n.kind === "skill" && n.name === manifest.onboardingSkill)
+  ) {
     problems.push(`${MANIFEST_FILE} → onboardingSkill: no skill named "${manifest.onboardingSkill}"`);
   }
   if (nodes.length === 0) problems.push("the package declares nothing to install");
@@ -208,8 +222,13 @@ function checkRefs(nodes: Node[]): string[] {
     for (const ref of findRefs(text)) {
       if (typeof ref === "string") problems.push(`${where}: ${ref}`);
       else if (ref.type === "tool" && !has("mcpServer", ref.server)) {
-        problems.push(`${where}: {{tool:${ref.server}.${ref.tool}}} names an MCP server the package does not declare`);
-      } else if ((ref.type === "skill" || ref.type === "agent" || ref.type === "command") && !has(ref.type, ref.name)) {
+        problems.push(
+          `${where}: {{tool:${ref.server}.${ref.tool}}} names an MCP server the package does not declare`,
+        );
+      } else if (
+        (ref.type === "skill" || ref.type === "agent" || ref.type === "command") &&
+        !has(ref.type, ref.name)
+      ) {
         problems.push(`${where}: {{${ref.type}:${ref.name}}} names a ${ref.type} the package does not have`);
       } else if (ref.type === "skill_dir" && !inSkill) {
         problems.push(`${where}: {{skill_dir}} only means something inside a skill`);
@@ -221,7 +240,8 @@ function checkRefs(nodes: Node[]): string[] {
     check(`${node.kind} ${node.name}`, node.doc.body, node.kind === "skill");
     if (node.kind === "skill") {
       for (const file of node.files) {
-        if (file.text) check(`skill ${node.name}/${file.rel}`, Buffer.from(file.bytes).toString("utf8"), true);
+        if (file.text)
+          check(`skill ${node.name}/${file.rel}`, Buffer.from(file.bytes).toString("utf8"), true);
       }
     }
   }

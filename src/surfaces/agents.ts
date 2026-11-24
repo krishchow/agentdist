@@ -49,7 +49,11 @@ export function markdownAgents(dir: ScopedLoc, options: MarkdownAgentsOptions = 
         resolveRefs(ctx),
       );
       return [
-        { type: "file", path: join(base(ctx), `${name}${options.ext ?? ".md"}`), content: renderDoc(convert(node.doc)) },
+        {
+          type: "file",
+          path: join(base(ctx), `${name}${options.ext ?? ".md"}`),
+          content: renderDoc(convert(node.doc)),
+        },
       ];
     },
   };
@@ -57,7 +61,12 @@ export function markdownAgents(dir: ScopedLoc, options: MarkdownAgentsOptions = 
 
 export interface TomlAgentsOptions {
   /** Build the TOML document. Receives the rendered prompt body. */
-  fields: (agent: { name: string; description: string; prompt: string; tools?: string[] }) => Record<string, unknown>;
+  fields: (agent: {
+    name: string;
+    description: string;
+    prompt: string;
+    tools?: string[];
+  }) => Record<string, unknown>;
 }
 
 /** Subagents as one TOML file each: `<dir>/<name>.toml`. */

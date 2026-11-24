@@ -30,7 +30,9 @@ export const canonicalDialect: Dialect = {
   mcpGrant: (server, tool) => (tool === "*" ? `mcp__${server}` : `mcp__${server}__${tool}`),
 };
 
-export function dialect(overrides: Partial<Dialect> & { tools?: Record<string, string | null> } = {}): Dialect {
+export function dialect(
+  overrides: Partial<Dialect> & { tools?: Record<string, string | null> } = {},
+): Dialect {
   return { ...canonicalDialect, ...overrides, tools: { ...identityTools, ...overrides.tools } };
 }
 

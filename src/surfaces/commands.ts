@@ -38,7 +38,11 @@ export function markdownCommands(dir: ScopedLoc, options: MarkdownCommandsOption
         mapBody((body) => (placeholder ? body.replaceAll(ARGUMENTS, placeholder) : body)),
       );
       return [
-        { type: "file", path: join(base(ctx), `${name}${options.ext ?? ".md"}`), content: renderDoc(convert(node.doc)) },
+        {
+          type: "file",
+          path: join(base(ctx), `${name}${options.ext ?? ".md"}`),
+          content: renderDoc(convert(node.doc)),
+        },
       ];
     },
   };
@@ -57,7 +61,10 @@ export function tomlCommands(dir: ScopedLoc, options: TomlCommandsOptions = {}):
       const name = ctx.installed(node.name);
       let prompt = ctx.render(node.doc.body).trim();
       if (options.argumentsPlaceholder) prompt = prompt.replaceAll(ARGUMENTS, options.argumentsPlaceholder);
-      const fields: Record<string, unknown> = { ...(node.description ? { description: node.description } : {}), prompt };
+      const fields: Record<string, unknown> = {
+        ...(node.description ? { description: node.description } : {}),
+        prompt,
+      };
       return [{ type: "file", path: join(base(ctx), `${name}.toml`), content: `${stringifyToml(fields)}\n` }];
     },
   };

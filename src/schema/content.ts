@@ -6,11 +6,9 @@ import { z } from "zod";
  * to harnesses whose dialect does not drop them.
  */
 
-const toolList = z.union([z.string(), z.array(z.string())]).transform((v) =>
-  (Array.isArray(v) ? v : v.split(","))
-    .map((s) => s.trim())
-    .filter(Boolean),
-);
+const toolList = z
+  .union([z.string(), z.array(z.string())])
+  .transform((v) => (Array.isArray(v) ? v : v.split(",")).map((s) => s.trim()).filter(Boolean));
 
 export const SkillFrontmatter = z.looseObject({
   name: z.string().min(1).max(64),
