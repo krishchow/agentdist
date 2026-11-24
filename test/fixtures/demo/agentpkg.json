@@ -1,0 +1,28 @@
+{
+  "engine": "v1",
+  "name": "demo",
+  "version": "1.2.3",
+  "description": "A fixture package.",
+  "skills": "./skills",
+  "agents": "./agents",
+  "commands": "./commands",
+  "mcpServers": {
+    "demo": {
+      "command": "npx",
+      "args": ["-y", "demo-mcp@{{version}}"],
+      "env": { "DEMO_MODE": "1" },
+      "envPassthrough": ["DEMO_TOKEN"],
+      "startupTimeoutSec": 60,
+      "toolTimeoutSec": 300
+    }
+  },
+  "onboardingSkill": "setup",
+  "listing": {
+    "displayName": "Demo",
+    "shortDescription": "A fixture",
+    "category": "Developer Tools",
+    "keywords": ["demo"],
+    "author": { "name": "tester" },
+    "license": "MIT"
+  }
+}

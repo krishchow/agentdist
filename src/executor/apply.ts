@@ -225,6 +225,7 @@ export function applyInstall(options: InstallOptions): ApplyResult {
   const edits = new Map<string, ConfigEdit[]>();
   const queue = (path: string, edit: ConfigEdit) => edits.set(path, [...(edits.get(path) ?? []), edit]);
   const backupConfigs = new Set<string>();
+  const mayDelete = new Set<string>();
   const nextConfigs: Ledger["configs"] = [];
   const sameKey = (a: { path: string; keyPath: string[] }, path: string, keyPath: string[]) =>
     a.path === path && a.keyPath.join("\u0000") === keyPath.join("\u0000");
@@ -233,14 +234,17 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     const stored = toLedgerPath(config.path, root);
     const target = `${show(config.path)} → ${config.keyPath.join(".")}`;
     const wanted = canonicalJson(config.value);
+    const owned = previous?.configs.find((c) => sameKey(c, stored, config.keyPath));
+    const createdFile =
+      owned?.createdFile ?? (previous?.configs.some((c) => c.path === stored && c.createdFile) || !existsSync(config.path));
     nextConfigs.push({
       path: stored,
       format: config.format,
       keyPath: config.keyPath,
       hash: hashBytes(wanted),
       harnesses: [...new Set(config.claims.map((c) => c.harness))],
+      ...(createdFile ? { createdFile: true } : {}),
     });
-    const owned = previous?.configs.find((c) => sameKey(c, stored, config.keyPath));
     let current: unknown;
     try {
       current = editorFor(config.format).get(readText(config.path), config.keyPath);
@@ -286,6 +290,7 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     }
     actions.push({ type: "remove", target });
     queue(path, { format: entry.format, keyPath: entry.keyPath, value: undefined });
+    if (entry.createdFile) mayDelete.add(path);
   }
 
   if (conflicts.length > 0) return result(false);
@@ -307,7 +312,8 @@ export function applyInstall(options: InstallOptions): ApplyResult {
         const editor = editorFor(edit.format);
         text = edit.value === undefined ? editor.remove(text, edit.keyPath) : editor.set(text, edit.keyPath, edit.value as never);
       }
-      txn.write(path, text);
+      if (mayDelete.has(path) && editorFor(list[0]!.format).isHollow(text)) txn.remove(path, root);
+      else txn.write(path, text);
     }
 
     const ledger: Ledger = {
@@ -384,6 +390,7 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
 
     const configs: Ledger["configs"] = [];
     const texts = new Map<string, string>();
+    const mayDelete = new Map<string, ConfigFormat>();
     for (const entry of ledger.configs) {
       const left = remaining(entry.harnesses);
       if (left.length > 0) {
@@ -408,8 +415,13 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       }
       actions.push({ type: "remove", target });
       texts.set(path, editor.remove(text, entry.keyPath));
+      if (entry.createdFile) mayDelete.set(path, entry.format);
     }
-    for (const [path, text] of texts) txn.write(path, text);
+    for (const [path, text] of texts) {
+      const format = mayDelete.get(path);
+      if (format && editorFor(format).isHollow(text)) txn.remove(path, root);
+      else txn.write(path, text);
+    }
 
     const harnesses = remaining(ledger.harnesses);
     if (harnesses.length === 0 || (Object.keys(files).length === 0 && configs.length === 0)) {

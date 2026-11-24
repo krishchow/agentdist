@@ -28,6 +28,8 @@ export const Ledger = z.object({
       keyPath: z.array(z.string()),
       hash: z.string(),
       harnesses: z.array(z.string()),
+      /** The engine created the file, so it may delete it again once nothing is left in it. */
+      createdFile: z.boolean().optional(),
     }),
   ),
 });
