@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
+import { portableDialect } from "../harness/dialect";
 import { renderDoc } from "../ir/markdown";
 import type { SkillNode } from "../ir/nodes";
 import type { Op } from "../ops/types";
@@ -11,6 +12,11 @@ export interface SkillsDirOptions {
    * puts the skill in one of them, this harness uses that copy instead of writing a second one.
    */
   alsoReads?: ScopedLoc[];
+  /**
+   * The directory is shared between harnesses, so references are rendered in the portable dialect
+   * and every harness that reads it produces the same bytes.
+   */
+  portable?: boolean;
   /** Extra passes over `SKILL.md`, after the standard ones. */
   transform?: (node: SkillNode, ctx: PlanCtx) => Transform;
 }
@@ -21,7 +27,8 @@ export interface SkillsDirOptions {
  */
 export function skillsDir(dir: ScopedLoc, options: SkillsDirOptions = {}): Handler<"skill"> {
   return {
-    plan(node, ctx) {
+    plan(node, harnessCtx) {
+      const ctx = options.portable ? harnessCtx.withDialect(portableDialect) : harnessCtx;
       const base = dir[ctx.scope];
       if (!base) return { skip: `no ${ctx.scope}-scope skills directory` };
       const name = ctx.installed(node.name);

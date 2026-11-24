@@ -59,6 +59,8 @@ export interface PlanCtx extends LocCtx {
   renderRef(ref: Ref, skillDir?: string): string;
   /** A path as content should spell it: `~/…` under home, repo-relative in a project. */
   displayPath(abs: string): string;
+  /** The same context rendering references in another dialect. */
+  withDialect(dialect: Dialect): PlanCtx;
   warn(message: string): void;
 }
 
@@ -74,6 +76,11 @@ export interface Handler<K extends NodeKind> {
 
 export function unsupported<K extends NodeKind>(reason: string): Handler<K> {
   return { unsupported: reason, plan: () => ({ skip: reason }) };
+}
+
+/** A different handler per scope, for a harness whose two scopes do not work the same way. */
+export function byScope<K extends NodeKind>(handlers: Record<Scope, Handler<K>>): Handler<K> {
+  return { plan: (node, ctx) => handlers[ctx.scope].plan(node, ctx) };
 }
 
 /**

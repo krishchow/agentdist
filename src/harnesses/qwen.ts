@@ -4,8 +4,7 @@ import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = dotHome(".qwen", "QWEN_HOME");
 
@@ -18,7 +17,7 @@ export const qwen = defineHarness({
   // are not documented against the canonical ones, so the allowlist is not carried over.
   dialect: dialect({ ...noToolGrants }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }),
     command: markdownCommands({ user: inConfig("commands"), local: inConfig("commands") }),
     mcpServer: mcpConfig({

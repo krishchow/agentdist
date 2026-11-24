@@ -46,6 +46,11 @@ describe("toml editor", () => {
     expect(toml.remove(twice, ["mcp_servers", "demo"]).trim()).toBe(before.trim());
   });
 
+  it("accepts a table whose scalars come after its subtables", () => {
+    const value = { command: "npx", env: { A: "1" }, env_vars: ["TOKEN"], tool_timeout_sec: 300 };
+    expect(toml.get(toml.set("", ["mcp_servers", "demo"], value), ["mcp_servers", "demo"])).toEqual(value);
+  });
+
   it("does not mistake a sibling with the same prefix for the table", () => {
     const text = toml.set(`[mcp_servers.demo-two]\ncommand = "y"\n`, ["mcp_servers", "demo"], entry);
     expect(toml.get(toml.remove(text, ["mcp_servers", "demo"]), ["mcp_servers", "demo-two"])).toEqual({

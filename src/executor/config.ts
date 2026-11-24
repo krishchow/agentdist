@@ -216,7 +216,7 @@ const toml: ConfigEditor = {
     const body = cleared.trimEnd();
     const next = `${body}${body ? "\n\n" : ""}${stringifyToml(nested(keyPath, value)).trim()}\n`;
     // The edit is textual, so prove it: the file must parse and hold exactly the value asked for.
-    if (JSON.stringify(walk(parseTomlText(next), keyPath)) !== JSON.stringify(value)) {
+    if (canonicalJson(walk(parseTomlText(next), keyPath)) !== canonicalJson(value)) {
       throw new ConfigError(`could not safely write [${keyPath.join(".")}]`);
     }
     return next;

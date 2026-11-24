@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, sep } from "node:path";
-import type { Env, HarnessDef, PlanCtx, Skip } from "../harness/define";
+import type { Dialect, Env, HarnessDef, PlanCtx, Skip } from "../harness/define";
 import { installedName, type Node, nodeId, type Package } from "../ir/nodes";
 import { type Ref, replaceRefs } from "../ir/refs";
 import type { Scope } from "../schema/manifest";
@@ -38,19 +38,20 @@ export function makeCtx(
   scope: Scope,
   env: Env,
   warn: (message: string) => void,
+  dialect: Dialect = harness.dialect,
 ): PlanCtx {
   const installed = (name: string) => installedName(pkg, name);
   const show = (abs: string) => harness.showPath?.(abs, env) ?? displayPath(abs, scope, env);
   const renderRef = (ref: Ref, skillDir?: string): string => {
     switch (ref.type) {
       case "tool":
-        return harness.dialect.toolRef(ref.server, ref.tool);
+        return dialect.toolRef(ref.server, ref.tool);
       case "skill":
-        return harness.dialect.skillRef(installed(ref.name));
+        return dialect.skillRef(installed(ref.name));
       case "agent":
-        return harness.dialect.agentRef(installed(ref.name));
+        return dialect.agentRef(installed(ref.name));
       case "command":
-        return harness.dialect.commandRef(installed(ref.name));
+        return dialect.commandRef(installed(ref.name));
       case "skill_dir":
         return skillDir ? show(skillDir) : "{{skill_dir}}";
       case "pkg.name":
@@ -69,6 +70,7 @@ export function makeCtx(
     renderRef,
     render: (text, skillDir) => replaceRefs(text, (ref) => renderRef(ref, skillDir)),
     displayPath: show,
+    withDialect: (other) => makeCtx(pkg, harness, scope, env, warn, other),
     warn,
   };
 }
@@ -109,14 +111,15 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
     }
   }
 
-  const claimFile = (path: string, op: FileOp, claim: Claim, harness: HarnessDef) => {
+  const claimFile = (path: string, op: FileOp, claim: Claim, harness: HarnessDef, borrowed = false) => {
     const existing = files.get(path);
     if (!existing) {
       const { satisfiedBy: _, ...file } = op;
       files.set(path, { ...file, path, claims: [claim] });
       return;
     }
-    if (!sameContent(existing.content, op.content)) {
+    // A harness borrowing the copy in another harness's own directory reads that rendering anyway.
+    if (!borrowed && !sameContent(existing.content, op.content)) {
       const first = label(existing.claims[0]?.harness);
       diagnostics.push({
         level: "warn",
@@ -136,7 +139,7 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   for (const { op, claim, harness } of proposed) {
     if (op.type !== "file" || !op.satisfiedBy?.length) continue;
     const elsewhere = files.has(op.path) ? undefined : op.satisfiedBy.find((path) => files.has(path));
-    claimFile(elsewhere ?? op.path, op, claim, harness);
+    claimFile(elsewhere ?? op.path, op, claim, harness, elsewhere !== undefined);
   }
 
   for (const { op, claim, harness } of proposed) {

@@ -4,8 +4,7 @@ import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 import { jsonOrJsonc, opencodeEntry } from "./opencode";
 
 const home = xdgConfig("kilo", "KILO_CONFIG_DIR");
@@ -18,7 +17,7 @@ export const kilo = defineHarness({
   detect: configRootExists(home),
   dialect: dialect({ toolRef: (server, tool) => `${server}_${tool}`, ...noToolGrants }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: markdownAgents(
       { user: inConfig("agents"), local: inConfig("agents") },
       { frontmatter: ({ description }) => ({ description, mode: "subagent" }) },

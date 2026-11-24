@@ -8,8 +8,7 @@ import type { McpServerNode } from "../ir/nodes";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
 import { compactEntry, mcpConfig } from "../surfaces/mcp";
-import { AGENTS_SKILLS, CLAUDE_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
 /** `<dir>/<base>.jsonc` if the user keeps one, otherwise `<dir>/<base>.json`. */
 export function jsonOrJsonc(dir: string, base: string): string {
@@ -59,7 +58,7 @@ export const opencode = defineHarness({
     ...noToolGrants,
   }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS, { alsoReads: [CLAUDE_SKILLS] }),
+    skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
     agent: markdownAgents(
       { user: inConfig("agents"), local: inConfig("agents") },
       // An agent file defaults to a primary agent; a package ships subagents.

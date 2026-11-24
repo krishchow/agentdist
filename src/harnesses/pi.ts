@@ -4,8 +4,7 @@ import { dialect } from "../harness/dialect";
 import { configRootExists, inConfig, inProject } from "../harness/locations";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = (env: Env) => env.vars.PI_CODING_AGENT_DIR || join(env.home, ".pi", "agent");
 
@@ -17,7 +16,7 @@ export const pi = defineHarness({
   detect: configRootExists(home),
   dialect: dialect({ skillRef: (name) => `/skill:${name}` }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: unsupported("pi has no subagent definitions"),
     // Prompt templates.
     command: markdownCommands(

@@ -2,8 +2,7 @@ import { defineHarness, type LocCtx, unsupported } from "../harness/define";
 import { dialect, proseSkillRef, proseToolRef } from "../harness/dialect";
 import { configRootExists, xdgConfig } from "../harness/locations";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS, CLAUDE_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 import { jsonOrJsonc } from "./opencode";
 
 const home = xdgConfig("amp");
@@ -15,7 +14,7 @@ export const amp = defineHarness({
   detect: configRootExists(home),
   dialect: dialect({ toolRef: proseToolRef, skillRef: proseSkillRef }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS, { alsoReads: [CLAUDE_SKILLS] }),
+    skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
     agent: unsupported("Amp has no user-defined subagents"),
     command: unsupported("Amp has no command files; ship it as a skill"),
     mcpServer: mcpConfig({

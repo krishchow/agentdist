@@ -4,8 +4,7 @@ import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS, CLAUDE_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("devin");
 
@@ -18,7 +17,7 @@ export const devin = defineHarness({
   dialect: dialect({ toolRef: proseToolRef, ...noToolGrants }),
   kinds: {
     // .claude/skills is imported for projects only.
-    skill: skillsDir(AGENTS_SKILLS, { alsoReads: [{ local: CLAUDE_SKILLS.local }] }),
+    skill: sharedSkills({ alsoReads: [{ local: CLAUDE_SKILLS.local }] }),
     agent: markdownAgents(
       { user: inConfig("agents"), local: inConfig("agents") },
       { folderFile: "AGENT.md" },

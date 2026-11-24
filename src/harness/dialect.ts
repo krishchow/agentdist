@@ -51,3 +51,9 @@ export const noToolGrants: Pick<Dialect, "tools" | "mcpGrant" | "quietGrants"> =
   mcpGrant: () => null,
   quietGrants: true,
 };
+
+/**
+ * The dialect for content in a directory several harnesses read. No single harness's identifiers
+ * can be right for all of them, so references are written the way every model understands.
+ */
+export const portableDialect: Dialect = dialect({ toolRef: proseToolRef, skillRef: proseSkillRef });

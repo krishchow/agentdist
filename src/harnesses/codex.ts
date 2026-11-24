@@ -4,8 +4,7 @@ import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import type { McpServerNode } from "../ir/nodes";
 import { tomlAgents } from "../surfaces/agents";
 import { compactEntry, mcpConfig } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = dotHome(".codex", "CODEX_HOME");
 
@@ -32,7 +31,7 @@ export const codex = defineHarness({
   // A subagent file has no tool list; capabilities are narrowed through `features` instead.
   dialect: dialect({ toolRef: proseToolRef, skillRef: (name) => `$${name}`, ...noToolGrants }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: tomlAgents(
       { user: inConfig("agents"), local: inConfig("agents") },
       { fields: ({ name, description, prompt }) => ({ name, description, developer_instructions: prompt }) },

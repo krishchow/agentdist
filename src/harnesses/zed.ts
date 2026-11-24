@@ -2,8 +2,7 @@ import { defineHarness, unsupported } from "../harness/define";
 import { dialect } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("zed");
 
@@ -14,7 +13,7 @@ export const zed = defineHarness({
   detect: configRootExists(home),
   dialect: dialect({ toolRef: (server, tool) => `mcp:${server}:${tool}` }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: unsupported("Zed has no subagent definition files"),
     command: unsupported("Zed has no command files; a skill is its slash command"),
     mcpServer: mcpConfig({

@@ -25,6 +25,7 @@ export { type CliOptions, runCli } from "./cli/run";
 export type { Action, ApplyResult, Conflict } from "./executor/apply";
 export type { Ledger } from "./executor/ledger";
 export {
+  byScope,
   type Dialect,
   defineHarness,
   type Env,
@@ -35,7 +36,14 @@ export {
   type ScopedLoc,
   unsupported,
 } from "./harness/define";
-export { canonicalDialect, dialect, proseSkillRef, proseToolRef } from "./harness/dialect";
+export {
+  canonicalDialect,
+  dialect,
+  noToolGrants,
+  portableDialect,
+  proseSkillRef,
+  proseToolRef,
+} from "./harness/dialect";
 export { configRootExists, dotHome, inConfig, inHome, inProject, xdgConfig } from "./harness/locations";
 export { findHarness, HARNESSES } from "./harnesses/index";
 export { loadPackage, PackageError } from "./ir/load";
@@ -59,4 +67,5 @@ export {
 export { markdownAgents, tomlAgents } from "./surfaces/agents";
 export { markdownCommands, tomlCommands } from "./surfaces/commands";
 export { mcpConfig, stdioEntry } from "./surfaces/mcp";
+export { AGENTS_SKILLS, CLAUDE_SKILLS, sharedSkills } from "./surfaces/shared";
 export { skillsDir } from "./surfaces/skills";

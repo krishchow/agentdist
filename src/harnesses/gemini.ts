@@ -5,8 +5,7 @@ import { configRootExists, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { tomlCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 // GEMINI_CLI_HOME replaces the home directory itself, not the .gemini directory inside it.
 const home = (env: Env) => join(env.vars.GEMINI_CLI_HOME || env.home, ".gemini");
@@ -37,7 +36,7 @@ export const gemini = defineHarness({
   }),
   kinds: {
     // Within a scope Gemini prefers .agents/skills over .gemini/skills, so the shared one is used.
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }, { tools: "list" }),
     command: tomlCommands(
       { user: inConfig("commands"), local: inConfig("commands") },

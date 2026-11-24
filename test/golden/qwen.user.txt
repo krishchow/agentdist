@@ -24,14 +24,14 @@ description: Set the demo up. Use on first run.
 
 # Setup
 
-Call mcp__demo__doctor first, then run `node ~/.agents/skills/demo-setup/scripts/run.mjs check`.
-When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+Call `doctor` (demo MCP tool) first, then run `node ~/.agents/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with the `demo-ship-it` skill or hand off to `demo-reviewer`.
 This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
 
 === ~/.agents/skills/demo-ship-it/references/notes.md
 # Notes
 
-See mcp__demo__status.
+See `status` (demo MCP tool).
 
 === ~/.agents/skills/demo-ship-it/SKILL.md
 ---

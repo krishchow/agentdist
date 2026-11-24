@@ -4,8 +4,7 @@ import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { AGENTS_SKILLS } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = dotHome(".factory");
 
@@ -33,7 +32,7 @@ export const factory = defineHarness({
     mcpGrant: () => null,
   }),
   kinds: {
-    skill: skillsDir(AGENTS_SKILLS),
+    skill: sharedSkills(),
     // Same markdown subagents as everyone else; Factory calls them droids.
     agent: markdownAgents({ user: inConfig("droids"), local: inConfig("droids") }, { tools: "list" }),
     command: markdownCommands({ user: inConfig("commands"), local: inConfig("commands") }),

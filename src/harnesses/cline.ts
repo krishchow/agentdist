@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { defineHarness, type LocCtx, unsupported } from "../harness/define";
+import { byScope, defineHarness, type LocCtx, unsupported } from "../harness/define";
 import { dialect, proseToolRef } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig, inProject } from "../harness/locations";
+import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownCommands } from "../surfaces/commands";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS } from "../surfaces/shared";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 import { skillsDir } from "../surfaces/skills";
 
 const home = dotHome(".cline", "CLINE_DIR");
@@ -18,10 +18,10 @@ export const cline = defineHarness({
   kinds: {
     // A project's .agents/skills is read; the docs do not confirm ~/.agents/skills, so a user
     // install uses Cline's own directory.
-    skill: skillsDir(
-      { user: inConfig("skills"), local: inProject(".agents", "skills") },
-      { alsoReads: [{ local: CLAUDE_SKILLS.local }] },
-    ),
+    skill: byScope({
+      user: skillsDir({ user: inConfig("skills") }),
+      local: sharedSkills({ alsoReads: [{ local: CLAUDE_SKILLS.local }] }),
+    }),
     agent: unsupported("Cline does not document a subagent file format"),
     // Workflows.
     command: markdownCommands(
