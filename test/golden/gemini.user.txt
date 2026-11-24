@@ -12,6 +12,43 @@
   "timeout": 300000
 }
 
+=== ~/.gemini/settings.json (json) → mcpServers . demo-remote
+{
+  "httpUrl": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  },
+  "timeout": 120000
+}
+
+=== ~/.gemini/settings.json (json) → hooks . BeforeTool [] (one element)
+{
+  "matcher": "run_shell_command|replace",
+  "hooks": [
+    {
+      "name": "demo-guard",
+      "type": "command",
+      "command": "node \"$HOME/.agentpkg/demo/hooks\"/guard.mjs",
+      "timeout": 10000
+    }
+  ]
+}
+
+=== ~/.gemini/settings.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "name": "demo-greet",
+      "type": "command",
+      "command": "echo demo ready"
+    }
+  ]
+}
+
+=== ~/.agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>
 

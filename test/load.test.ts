@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -30,7 +30,11 @@ describe("loadPackage", () => {
       "agent:reviewer",
       "command:ship",
       "mcpServer:demo",
+      "mcpServer:demo-remote",
+      "hook:guard",
+      "hook:greet",
     ]);
+    expect(pkg.hookFiles.map((f) => [f.rel, f.executable])).toEqual([["guard.mjs", true]]);
     const skill = pkg.nodes.find((n) => n.kind === "skill" && n.name === "setup");
     expect(skill?.kind === "skill" && skill.files.map((f) => [f.rel, f.text, f.executable])).toEqual([
       ["scripts/run.mjs", false, true],
@@ -41,7 +45,10 @@ describe("loadPackage", () => {
 
   it("fills {{version}} into MCP server arguments", () => {
     const server = demo().nodes.find((n) => n.kind === "mcpServer");
-    expect(server?.kind === "mcpServer" && server.args).toEqual(["-y", "demo-mcp@1.2.3"]);
+    expect(server?.kind === "mcpServer" && server.transport === "stdio" && server.args).toEqual([
+      "-y",
+      "demo-mcp@1.2.3",
+    ]);
   });
 
   it("namespaces installed names once", () => {
@@ -74,6 +81,25 @@ describe("loadPackage", () => {
     expect(found).toMatch(/names an MCP server the package does not declare/);
     expect(found).toMatch(/must be \{\{tool:<server>.<tool>\}\}/);
     expect(found).toMatch(/names a skill the package does not have/);
+    rmSync(dir, { recursive: true });
+  });
+
+  it("checks hooks and remote servers", () => {
+    const dir = copy();
+    const manifest = JSON.parse(readFileSync(join(dir, "agentpkg.json"), "utf8"));
+    delete manifest.hooksDir;
+    manifest.hooks.greet.matcher = ["Bash"];
+    writeFileSync(join(dir, "agentpkg.json"), JSON.stringify(manifest));
+    const found = problems(dir).join("\n");
+    expect(found).toMatch(/hooks.guard: the command uses \{\{hooks_dir\}\} but the package has no hooksDir/);
+    expect(found).toMatch(/hooks.greet: only PreToolUse and PostToolUse take a matcher/);
+
+    manifest.mcpServers.bad = { transport: "http", url: "not a url" };
+    manifest.mcpServers.typo = { command: "x", arg: [] };
+    writeFileSync(join(dir, "agentpkg.json"), JSON.stringify(manifest));
+    const shape = problems(dir).join("\n");
+    expect(shape).toMatch(/mcpServers.bad.url/);
+    expect(shape).toMatch(/mcpServers.typo: Unrecognized key: "arg"/);
     rmSync(dir, { recursive: true });
   });
 

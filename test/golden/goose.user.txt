@@ -1,5 +1,6 @@
 [info] agent:reviewer skipped: Goose runs subagents from recipes, not agent definition files
 [info] command:ship skipped: Goose slash commands point at recipes, which a package cannot express yet
+[info] mcpServer:demo-remote skipped: Goose does not document how a header reads the environment; add it by hand
 
 === ~/.config/goose/config.yaml (yaml) → extensions . demo
 {
@@ -18,6 +19,43 @@
     "DEMO_TOKEN"
   ],
   "timeout": 300
+}
+
+=== ~/.agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
+=== ~/.agents/plugins/demo-greet/hooks/hooks.json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo demo ready"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+=== ~/.agents/plugins/demo-guard/hooks/hooks.json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(shell|edit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.agentpkg/demo/hooks\"/guard.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
 }
 
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)

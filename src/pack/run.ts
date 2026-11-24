@@ -12,6 +12,7 @@ export interface PackResult {
   changes: PackChange[];
   /** Whether everything on disk already matched. */
   clean: boolean;
+  notes: string[];
 }
 
 function filesUnder(dir: string, base = dir): string[] {
@@ -36,6 +37,7 @@ export function runPack(pkg: Package, targets: PackTarget[], options: { check?: 
   }
   const outputs = new Map<string, string | Uint8Array>();
   const owned: string[] = [];
+  const notes: string[] = [];
   for (const target of targets.filter((t) => wanted.includes(t.id))) {
     const output = target.pack(pkg, pkg.manifest.pack[target.id] ?? {});
     for (const file of output.files) {
@@ -46,6 +48,7 @@ export function runPack(pkg: Package, targets: PackTarget[], options: { check?: 
       outputs.set(file.path, file.content);
     }
     owned.push(...(output.ownedDirs ?? []));
+    notes.push(...(output.notes ?? []).map((note) => `${target.id}: ${note}`));
   }
 
   const changes: PackChange[] = [];
@@ -70,5 +73,5 @@ export function runPack(pkg: Package, targets: PackTarget[], options: { check?: 
       if (!options.check) rmSync(join(pkg.root, path));
     }
   }
-  return { changes, clean: changes.every((c) => c.change === "unchanged") };
+  return { changes, clean: changes.every((c) => c.change === "unchanged"), notes };
 }

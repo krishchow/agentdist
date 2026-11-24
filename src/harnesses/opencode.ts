@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "jsonc-parser";
-import { defineHarness, type LocCtx, type PlanCtx } from "../harness/define";
+import { defineHarness, type LocCtx, type PlanCtx, unsupported } from "../harness/define";
 import { dialect, noToolGrants, proseSkillRef } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import type { McpServerNode } from "../ir/nodes";
+import type { StdioServerNode } from "../ir/nodes";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { compactEntry, mcpConfig } from "../surfaces/mcp";
+import { compactEntry, httpEntry, mcpConfig } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
 /** `<dir>/<base>.jsonc` if the user keeps one, otherwise `<dir>/<base>.json`. */
@@ -18,13 +18,18 @@ export function jsonOrJsonc(dir: string, base: string): string {
 
 /** The OpenCode family starts a server from one array, and adds `environment` to its own. */
 export function opencodeEntry(extra: Record<string, boolean> = {}) {
-  return (server: McpServerNode) =>
+  return (server: StdioServerNode) =>
     compactEntry({
       type: "local",
       command: [server.command, ...server.args],
       environment: server.env,
       ...extra,
     });
+}
+
+/** A remote server in the same family: `type: "remote"`, and `{env:NAME}` for a host variable. */
+export function opencodeHttpEntry(extra: Record<string, boolean> = {}) {
+  return httpEntry({ type: "remote", ...extra }, { envRef: (name) => `{env:${name}}` });
 }
 
 /**
@@ -77,8 +82,10 @@ export const opencode = defineHarness({
       },
       format: "jsonc",
       keyPath: mcpKeyPath,
-      entry: opencodeEntry(),
+      stdio: opencodeEntry(),
+      http: opencodeHttpEntry(),
     }),
+    hook: unsupported("OpenCode hooks are code plugins, not commands"),
   },
   sources: [
     "https://opencode.ai/docs/mcp-servers/",

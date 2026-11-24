@@ -3,7 +3,8 @@ import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { anchored, CLAUDE_HOOKS, claudeStyleHook, hooksConfig } from "../surfaces/hooks";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("devin");
@@ -28,7 +29,28 @@ export const devin = defineHarness({
       file: { user: inConfig("mcp_config.json"), local: inConfig("mcp_config.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry(),
+      stdio: stdioEntry(),
+      http: httpEntry({ transport: "http" }, { envRef: (name) => `\${env:${name}}` }),
+    }),
+    hook: hooksConfig({
+      // A project has a hooks file of its own; a user's hooks are a key in the main config file.
+      file: { user: inConfig("config.json"), local: inConfig("hooks.v1.json") },
+      format: "json",
+      events: {
+        SessionStart: "SessionStart",
+        SessionEnd: "SessionEnd",
+        UserPromptSubmit: "UserPromptSubmit",
+        PreToolUse: "PreToolUse",
+        PostToolUse: "PostToolUse",
+        Stop: "Stop",
+      },
+      projectDir: "$DEVIN_PROJECT_DIR",
+      tools: { Bash: "exec", Read: "read", Write: "write", Edit: "edit" },
+      // Devin also runs Claude Code's hooks, so one installed there is not registered again.
+      alsoReads: [CLAUDE_HOOKS],
+      keyPath: (hook, ctx) => (ctx.scope === "user" ? ["hooks", hook.event] : [hook.event]),
+      // The matcher is an unanchored regular expression, so it is pinned to whole tool names.
+      item: (hook) => claudeStyleHook({ ...hook, tools: hook.tools ? [anchored(hook.tools)] : undefined }),
     }),
   },
   sources: [
@@ -36,5 +58,6 @@ export const devin = defineHarness({
     "https://docs.devin.ai/cli/extensibility/skills/overview.md",
     "https://docs.devin.ai/cli/subagents.md",
     "https://docs.devin.ai/desktop/cascade.md",
+    "https://docs.devin.ai/cli/extensibility/hooks/overview.md",
   ],
 });

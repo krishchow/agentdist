@@ -1,4 +1,6 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for OpenCode; it gets the harness's default tools
+[info] hook:guard skipped: OpenCode hooks are code plugins, not commands
+[info] hook:greet skipped: OpenCode hooks are code plugins, not commands
 
 === ~/.config/opencode/opencode.json (jsonc) → mcp . servers . demo
 {
@@ -10,6 +12,16 @@
   ],
   "environment": {
     "DEMO_MODE": "1"
+  }
+}
+
+=== ~/.config/opencode/opencode.json (jsonc) → mcp . servers . demo-remote
+{
+  "type": "remote",
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer {env:DEMO_API_TOKEN}",
+    "X-Client": "demo"
   }
 }
 

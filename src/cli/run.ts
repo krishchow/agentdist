@@ -5,6 +5,7 @@ import {
   ENGINE_VERSION,
   findProjectRoot,
   install,
+  missingEnv,
   realEnv,
   status,
   uninstall,
@@ -38,6 +39,7 @@ const KIND_LABEL: Record<NodeKind, string> = {
   agent: "subagents",
   command: "commands",
   mcpServer: "MCP servers",
+  hook: "hooks",
 };
 
 const SCOPE_LABEL: Record<Scope, string> = { user: "User", local: "Project" };
@@ -232,8 +234,23 @@ export async function runCli(options: CliOptions): Promise<number> {
           if (!ledger) continue;
           const where = scope === "user" ? "~" : displayPath(env.projectRoot, "user", env);
           out(
-            `${SCOPE_LABEL[scope]} (${where}): ${ledger.package} ${ledger.version} for ${ledger.harnesses.join(", ")}; ${Object.keys(ledger.files).length} files, ${ledger.configs.length} config entries\n`,
+            `${SCOPE_LABEL[scope]} (${where}): ${ledger.package} ${ledger.version} for ${ledger.harnesses.join(", ")}; ${Object.keys(ledger.files).length} files, ${ledger.configs.length + ledger.items.length} config entries\n`,
           );
+        }
+        const declared = Object.entries(pkg.manifest.environment);
+        const missing = new Set(missingEnv(pkg, env).map((m) => m.name));
+        if (declared.length > 0 || missing.size > 0) {
+          out("Environment, as this shell sees it (a harness may see something else):\n");
+          const names = new Set([...declared.map(([name]) => name), ...missing]);
+          for (const name of names) {
+            const info = pkg.manifest.environment[name];
+            const state = env.vars[name]
+              ? "set"
+              : missing.has(name)
+                ? "NOT SET, needed"
+                : "not set, optional";
+            out(`  ${name.padEnd(28)} ${state}${info?.description ? `  ${info.description}` : ""}\n`);
+          }
         }
         return 0;
       }
@@ -386,6 +403,12 @@ async function runInstall(
   }
   out(`Installed ${pkg.name} ${pkg.version} for ${result.harnessIds.join(", ")} at ${scope} scope:\n`);
   printResult(result, out, "install");
+
+  for (const missing of missingEnv(pkg, env)) {
+    out(
+      `  ! ${missing.name} is not set in this shell (${missing.reason})${missing.description ? `: ${missing.description}` : ""}\n`,
+    );
+  }
 
   const onboarding = pkg.manifest.onboardingSkill;
   const next = onboarding

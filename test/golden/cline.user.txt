@@ -1,4 +1,7 @@
 [info] agent:reviewer skipped: Cline does not document a subagent file format
+[info] mcpServer:demo-remote skipped: Cline cannot read DEMO_API_TOKEN from the environment for a remote server's headers; add the header to its config by hand
+[info] hook:guard skipped: Cline hooks are one script per event with their own input and output contract
+[info] hook:greet skipped: Cline hooks are one script per event with their own input and output contract
 
 === ~/.cline/data/settings/cline_mcp_settings.json (json) → mcpServers . demo
 {

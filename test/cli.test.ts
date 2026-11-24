@@ -67,11 +67,15 @@ describe("cli", () => {
     expect(installed.out).toContain("+ ~/.claude.json → mcpServers.demo");
     expect(installed.out).toContain("run /demo-setup to finish setting up");
 
-    expect((await cli(env, "status")).out).toMatch(
-      /User \(~\): demo 1.2.3 for claude; 6 files, 1 config entries/,
+    const shown = (await cli(env, "status")).out;
+    expect(shown).toMatch(/User \(~\): demo 1.2.3 for claude; 7 files, 4 config entries/);
+    expect(shown).toMatch(/DEMO_API_TOKEN\s+NOT SET, needed\s+API token for the hosted demo server\./);
+    expect(shown).toMatch(/DEMO_TOKEN\s+not set, optional/);
+    expect(installed.out).toContain(
+      "! DEMO_API_TOKEN is not set in this shell (sent to the demo-remote server)",
     );
     expect((await cli(env, "install", "--harness", "claude", "--user")).out).toContain(
-      "7 already up to date",
+      "11 already up to date",
     );
 
     const removed = await cli(env, "uninstall");

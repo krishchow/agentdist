@@ -38,8 +38,26 @@ export const Ledger = z.object({
       harnesses: z.array(z.string()),
       /** The engine created the file, so it may delete it again once nothing is left in it. */
       createdFile: z.boolean().optional(),
+      /**
+       * The entry was already there, identical, before the package was installed. It is not
+       * removed on uninstall: something else put it there and may still need it.
+       */
+      adopted: z.boolean().optional(),
     }),
   ),
+  /** Elements owned inside arrays in the user's config files, identified by the hash of their value. */
+  items: z
+    .array(
+      z.object({
+        path: z.string(),
+        format: z.enum(["json", "jsonc", "toml", "yaml"]),
+        keyPath: z.array(z.string()),
+        hash: z.string(),
+        harnesses: z.array(z.string()),
+        createdFile: z.boolean().optional(),
+      }),
+    )
+    .default([]),
 });
 export type Ledger = z.infer<typeof Ledger>;
 

@@ -48,6 +48,9 @@ export const codexPlugin: PackTarget = {
       showPath: (rel) => `<plugin root>/${rel}`,
     });
     const servers = pkg.nodes.filter((n) => n.kind === "mcpServer");
+    const notes = pkg.nodes
+      .filter((n) => n.kind === "hook")
+      .map((n) => `hook "${n.name}" is left out: this target does not write plugin hooks yet`);
     const onboarding = manifest.onboardingSkill;
     const displayName = listing?.displayName ?? pkg.name;
 
@@ -80,10 +83,18 @@ export const codexPlugin: PackTarget = {
     };
     const files = [{ path: ".codex-plugin/plugin.json", content: json(plugin) }, ...content.files];
     if (servers.length) {
-      files.push({
-        path: options.mcpFile,
-        content: json({ mcpServers: Object.fromEntries(servers.map((s) => [s.name, codexMcpEntry(s)])) }),
-      });
+      const entries: Record<string, unknown> = {};
+      for (const server of servers) {
+        if (server.transport === "stdio") entries[server.name] = codexMcpEntry(server);
+        // A plugin's MCP file is documented for remote servers only as a type and a URL.
+        else if (Object.keys(server.headers).length === 0)
+          entries[server.name] = { type: "http", url: server.url };
+        else
+          notes.push(
+            `remote server "${server.name}" is left out: how a plugin's MCP file carries headers is not documented`,
+          );
+      }
+      files.push({ path: options.mcpFile, content: json({ mcpServers: entries }) });
     }
     if (options.marketplace !== false) {
       const market = options.marketplace === true ? {} : options.marketplace;
@@ -104,6 +115,6 @@ export const codexPlugin: PackTarget = {
         }),
       });
     }
-    return { files, ownedDirs: content.ownedDirs };
+    return { files, ownedDirs: content.ownedDirs, notes };
   },
 };

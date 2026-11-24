@@ -1,7 +1,7 @@
 import { defineHarness, unsupported } from "../harness/define";
 import { dialect } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("zed");
@@ -22,8 +22,11 @@ export const zed = defineHarness({
       file: { user: inConfig("settings.json") },
       format: "jsonc",
       keyPath: ["context_servers"],
-      entry: stdioEntry(),
+      stdio: stdioEntry(),
+      // Header values are literal here, so a server that needs a variable is skipped.
+      http: httpEntry(),
     }),
+    hook: unsupported("Zed has no lifecycle hooks"),
   },
   sources: [
     "https://github.com/zed-industries/zed/blob/main/docs/src/ai/mcp.md",

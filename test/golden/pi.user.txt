@@ -1,4 +1,6 @@
 [info] agent:reviewer skipped: pi has no subagent definitions
+[info] hook:guard skipped: pi hooks are TypeScript extensions, not commands
+[info] hook:greet skipped: pi hooks are TypeScript extensions, not commands
 
 === ~/.pi/agent/mcp.json (json) → mcpServers . demo
 {
@@ -11,6 +13,17 @@
     "DEMO_MODE": "1"
   },
   "timeout": 300
+}
+
+=== ~/.pi/agent/mcp.json (json) → mcpServers . demo-remote
+{
+  "type": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  },
+  "timeout": 120
 }
 
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)

@@ -2,9 +2,11 @@ import { join } from "node:path";
 import { defineHarness } from "../harness/define";
 import { canonicalDialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig, inProject } from "../harness/locations";
+import { HOOK_EVENTS } from "../schema/manifest";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { skillsDir } from "../surfaces/skills";
 
 const home = dotHome(".claude", "CLAUDE_CONFIG_DIR");
@@ -32,13 +34,25 @@ export const claude = defineHarness({
       },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({ type: "stdio" }, { toolTimeout: { field: "timeout", unit: "ms" } }),
+      stdio: stdioEntry({ type: "stdio" }, { toolTimeout: { field: "timeout", unit: "ms" } }),
+      // An unset variable is left as written and reported by `claude mcp list`.
+      http: httpEntry({ type: "http" }, { envRef: (name) => `\${${name}}` }),
+    }),
+    hook: hooksConfig({
+      file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
+      format: "json",
+      // The canonical events are Claude Code's own.
+      events: Object.fromEntries(HOOK_EVENTS.map((event) => [event, event])),
+      projectDir: "$CLAUDE_PROJECT_DIR",
+      keyPath: (hook) => ["hooks", hook.event],
+      item: claudeStyleHook,
     }),
   },
   sources: [
     "https://code.claude.com/docs/en/skills",
     "https://code.claude.com/docs/en/sub-agents",
     "https://code.claude.com/docs/en/mcp",
+    "https://code.claude.com/docs/en/hooks",
     "https://code.claude.com/docs/en/claude-directory",
   ],
 });

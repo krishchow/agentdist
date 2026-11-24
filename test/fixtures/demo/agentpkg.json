@@ -9,11 +9,27 @@
   "mcpServers": {
     "demo": {
       "command": "npx",
-      "args": ["-y", "demo-mcp@{{version}}"],
-      "env": { "DEMO_MODE": "1" },
-      "envPassthrough": ["DEMO_TOKEN"],
+      "args": [
+        "-y",
+        "demo-mcp@{{version}}"
+      ],
+      "env": {
+        "DEMO_MODE": "1"
+      },
+      "envPassthrough": [
+        "DEMO_TOKEN"
+      ],
       "startupTimeoutSec": 60,
       "toolTimeoutSec": 300
+    },
+    "demo-remote": {
+      "transport": "http",
+      "url": "https://mcp.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer {{env:DEMO_API_TOKEN}}",
+        "X-Client": "demo"
+      },
+      "toolTimeoutSec": 120
     }
   },
   "onboardingSkill": "setup",
@@ -21,8 +37,37 @@
     "displayName": "Demo",
     "shortDescription": "A fixture",
     "category": "Developer Tools",
-    "keywords": ["demo"],
-    "author": { "name": "tester" },
+    "keywords": [
+      "demo"
+    ],
+    "author": {
+      "name": "tester"
+    },
     "license": "MIT"
+  },
+  "hooks": {
+    "guard": {
+      "event": "PreToolUse",
+      "matcher": [
+        "Bash",
+        "Edit"
+      ],
+      "command": "node {{hooks_dir}}/guard.mjs",
+      "timeoutSec": 10
+    },
+    "greet": {
+      "event": "SessionStart",
+      "command": "echo demo ready"
+    }
+  },
+  "hooksDir": "./hooks",
+  "environment": {
+    "DEMO_API_TOKEN": {
+      "description": "API token for the hosted demo server.",
+      "required": true
+    },
+    "DEMO_TOKEN": {
+      "description": "Optional token for the local server."
+    }
   }
 }

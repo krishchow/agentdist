@@ -1,9 +1,11 @@
 import { defineHarness } from "../harness/define";
 import { dialect, proseToolRef } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
+import { HOOK_EVENTS } from "../schema/manifest";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
 const home = dotHome(".factory");
@@ -41,7 +43,19 @@ export const factory = defineHarness({
       file: { user: inConfig("mcp.json"), local: inConfig("mcp.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({ type: "stdio" }),
+      stdio: stdioEntry({ type: "stdio" }),
+      // An unset variable fails the connection with an error that names it.
+      http: httpEntry({ type: "http" }, { envRef: (name) => `\${${name}}` }),
+    }),
+    // In settings.json rather than hooks.json: an event in hooks.json replaces the same event in
+    // settings.json, so writing there would silently switch off hooks the user already has.
+    hook: hooksConfig({
+      file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
+      format: "json",
+      events: Object.fromEntries(HOOK_EVENTS.map((event) => [event, event])),
+      projectDir: "$FACTORY_PROJECT_DIR",
+      keyPath: (hook) => ["hooks", hook.event],
+      item: claudeStyleHook,
     }),
   },
   sources: [
@@ -49,5 +63,6 @@ export const factory = defineHarness({
     "https://docs.factory.com/harness/skills.md",
     "https://docs.factory.com/harness/subagents.md",
     "https://docs.factory.com/harness/custom-slash-commands.md",
+    "https://docs.factory.com/harness/hooks.md",
   ],
 });

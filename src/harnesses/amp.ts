@@ -1,7 +1,7 @@
 import { defineHarness, type LocCtx, unsupported } from "../harness/define";
 import { dialect, proseSkillRef, proseToolRef } from "../harness/dialect";
 import { configRootExists, xdgConfig } from "../harness/locations";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 import { jsonOrJsonc } from "./opencode";
 
@@ -25,8 +25,10 @@ export const amp = defineHarness({
       format: "jsonc",
       // One flat key with a dot in its name, not a nested object.
       keyPath: ["amp.mcpServers"],
-      entry: stdioEntry(),
+      stdio: stdioEntry(),
+      http: httpEntry({}, { envRef: (name) => `\${${name}}` }),
     }),
+    hook: unsupported("Amp hooks are code plugins, not commands"),
   },
   sources: [
     "https://ampcode.com/docs/markdown/customize/mcp",

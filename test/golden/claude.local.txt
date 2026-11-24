@@ -12,6 +12,41 @@
   "timeout": 300000
 }
 
+=== .mcp.json (json) → mcpServers . demo-remote
+{
+  "type": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
+}
+
+=== .claude/settings.json (json) → hooks . PreToolUse [] (one element)
+{
+  "matcher": "Bash|Edit",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"$CLAUDE_PROJECT_DIR/.agentpkg/demo/hooks\"/guard.mjs",
+      "timeout": 10
+    }
+  ]
+}
+
+=== .claude/settings.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo demo ready"
+    }
+  ]
+}
+
+=== .agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === .claude/agents/demo-reviewer.md
 ---
 name: demo-reviewer

@@ -13,6 +13,33 @@
   }
 }
 
+=== ~/.cursor/mcp.json (json) → mcpServers . demo-remote
+{
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${env:DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
+}
+
+=== ~/.cursor/hooks.json (json) → version
+1
+
+=== ~/.cursor/hooks.json (json) → hooks . preToolUse [] (one element)
+{
+  "command": "node \"$HOME/.agentpkg/demo/hooks\"/guard.mjs",
+  "matcher": "Shell|Write",
+  "timeout": 10
+}
+
+=== ~/.cursor/hooks.json (json) → hooks . sessionStart [] (one element)
+{
+  "command": "echo demo ready"
+}
+
+=== ~/.agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>
 

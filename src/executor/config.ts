@@ -22,6 +22,18 @@ export interface ConfigEditor {
   remove(text: string, keyPath: string[]): string;
   /** Whether nothing but empty containers is left, so a file the engine created can be deleted again. */
   isHollow(text: string): boolean;
+  /** Append one element to the array at `keyPath`, creating the array and its parents if needed. */
+  append(text: string, keyPath: string[], value: JsonValue): string;
+  /** Remove the element at `index` of the array at `keyPath`, and the array itself if that empties it. */
+  removeAt(text: string, keyPath: string[], index: number): string;
+}
+
+/** The array at `keyPath`, or an empty one if nothing is there. Anything else there is an error. */
+export function arrayAt(editor: ConfigEditor, text: string, keyPath: string[]): JsonValue[] {
+  const value = editor.get(text, keyPath);
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new ConfigError(`${keyPath.join(".")} is not a list`);
+  return value;
 }
 
 function hollow(value: unknown): boolean {
@@ -159,6 +171,39 @@ const json: ConfigEditor = {
     return applyEdits(text, modify(text, keyPath, undefined, {}));
   },
   isHollow: (text) => hollow(parseJson(text)),
+  append(text, keyPath, value) {
+    const existing = arrayAt(json, text, keyPath);
+    if (existing.length === 0) return json.set(text, keyPath, [value]);
+    const tree = parseTree(text, [], { allowTrailingComma: true });
+    const array = tree && findNodeAtLocation(tree, keyPath);
+    const last = array?.children?.at(-1);
+    if (!array || !last) throw new ConfigError(`could not safely extend ${keyPath.join(".")}`);
+    const style = jsonStyle(text);
+    const indent = lineIndent(text, last.offset) || lineIndent(text, array.offset) + style.unit;
+    const end = last.offset + last.length;
+    const hasComma = stripComments(text.slice(end, array.offset + array.length - 1)).includes(",");
+    const next = `${text.slice(0, end)}${hasComma ? "" : ","}${style.eol}${indent}${pretty(value, indent, style)}${text.slice(end)}`;
+    if (canonicalJson(arrayAt(json, next, keyPath)) !== canonicalJson([...existing, value])) {
+      throw new ConfigError(`could not safely extend ${keyPath.join(".")}`);
+    }
+    return next;
+  },
+  removeAt(text, keyPath, index) {
+    const existing = arrayAt(json, text, keyPath);
+    if (existing.length <= 1) return json.remove(text, keyPath);
+    const tree = parseTree(text, [], { allowTrailingComma: true });
+    const children = (tree && findNodeAtLocation(tree, keyPath))?.children ?? [];
+    const target = children[index];
+    if (!target) return text;
+    // Cut from the end of the element before it, or up to the start of the one after it, so the
+    // separator goes with the element and nothing else on either side moves.
+    const previous = children[index - 1];
+    const following = children[index + 1];
+    const [from, to] = previous
+      ? [previous.offset + previous.length, target.offset + target.length]
+      : [target.offset, following ? following.offset : target.offset + target.length];
+    return text.slice(0, from) + text.slice(to);
+  },
 };
 
 // ── TOML ─────────────────────────────────────────────────────────────────────
@@ -237,6 +282,12 @@ const toml: ConfigEditor = {
     return tidy ? `${tidy}\n` : "";
   },
   isHollow: (text) => hollow(parseTomlText(text)),
+  append() {
+    throw new ConfigError("list entries in TOML files are not supported");
+  },
+  removeAt() {
+    throw new ConfigError("list entries in TOML files are not supported");
+  },
 };
 
 // ── YAML ─────────────────────────────────────────────────────────────────────
@@ -265,6 +316,19 @@ const yaml: ConfigEditor = {
     return doc.toString();
   },
   isHollow: (text) => hollow(parseYamlText(text).toJS() ?? {}),
+  append(text, keyPath, value) {
+    const existing = arrayAt(yaml, text, keyPath);
+    return yaml.set(text, keyPath, [...existing, value]);
+  },
+  removeAt(text, keyPath, index) {
+    const existing = arrayAt(yaml, text, keyPath);
+    if (existing.length <= 1) return yaml.remove(text, keyPath);
+    return yaml.set(
+      text,
+      keyPath,
+      existing.filter((_, i) => i !== index),
+    );
+  },
 };
 
 const editors: Record<ConfigFormat, ConfigEditor> = { json, jsonc: json, toml, yaml };

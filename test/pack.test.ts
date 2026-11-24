@@ -33,6 +33,7 @@ describe("pack", () => {
     const result = runPack(loadPackage(dir), PACK_TARGETS);
     expect(result.changes.map((c) => c.path).sort()).toEqual([
       ".agents/plugins/marketplace.json",
+      ".claude-plugin/hooks.json",
       ".claude-plugin/marketplace.json",
       ".claude-plugin/plugin.json",
       ".codex-plugin/plugin.json",
@@ -45,8 +46,28 @@ describe("pack", () => {
       author: { name: "tester" },
       license: "MIT",
       keywords: ["demo"],
-      mcpServers: { demo: { command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } } },
+      hooks: "./.claude-plugin/hooks.json",
+      mcpServers: {
+        demo: { command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } },
+        "demo-remote": {
+          type: "http",
+          url: "https://mcp.example.com/mcp",
+          headers: { Authorization: "Bearer ${DEMO_API_TOKEN}", "X-Client": "demo" },
+        },
+      },
     });
+    // Hook commands point into the plugin's own install directory.
+    expect(readJson(dir, ".claude-plugin/hooks.json").hooks.PreToolUse).toEqual([
+      {
+        matcher: "Bash|Edit",
+        hooks: [{ type: "command", command: 'node "${CLAUDE_PLUGIN_ROOT}/hooks"/guard.mjs', timeout: 10 }],
+      },
+    ]);
+    // What a format cannot carry is said, not dropped.
+    expect(result.notes).toContain(
+      'codex-plugin: hook "guard" is left out: this target does not write plugin hooks yet',
+    );
+    expect(result.notes.join("\n")).toMatch(/codex-plugin: remote server "demo-remote" is left out/);
     const codex = readJson(dir, ".codex-plugin/plugin.json");
     expect(codex.skills).toBe("./skills/");
     expect(codex.mcpServers).toBe("./codex.mcp.json");

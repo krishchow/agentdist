@@ -33,7 +33,30 @@ export interface ConfigOp {
   value: JsonValue;
 }
 
-export type Op = FileOp | ConfigOp;
+/**
+ * One element the package owns inside an array in a config file that belongs to the user, such as
+ * a hook registration. It is identified by its value: the same element is never added twice, and
+ * only an element still equal to what was written is ever removed.
+ */
+export interface ConfigItemOp {
+  type: "config-item";
+  /** Absolute path. */
+  path: string;
+  format: ConfigFormat;
+  /** Where the array is. */
+  keyPath: string[];
+  value: JsonValue;
+  /**
+   * Other config files the harness would also act on this registration from. If another harness
+   * in the plan registers the same node in one of them, this op is dropped, so that a hook does
+   * not run twice in a harness that reads its neighbour's settings as well as its own.
+   */
+  coveredBy?: string[];
+  /** Keys the file needs beside the element, such as a format version. Written only if the element is. */
+  preamble?: Array<{ keyPath: string[]; value: JsonValue }>;
+}
+
+export type Op = FileOp | ConfigOp | ConfigItemOp;
 
 export interface Claim {
   harness: string;
@@ -48,6 +71,10 @@ export interface PlannedConfig extends ConfigOp {
   claims: Claim[];
 }
 
+export interface PlannedItem extends ConfigItemOp {
+  claims: Claim[];
+}
+
 export interface Diagnostic {
   level: "info" | "warn";
   harness: string;
@@ -58,6 +85,7 @@ export interface Diagnostic {
 export interface Plan {
   files: PlannedFile[];
   configs: PlannedConfig[];
+  items: PlannedItem[];
   diagnostics: Diagnostic[];
 }
 

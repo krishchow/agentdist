@@ -21,6 +21,26 @@ describe("json editor", () => {
     expect(json.remove(after, ["mcpServers", "demo"])).toBe(before);
   });
 
+  it("adds and removes one element of a list without disturbing the others", () => {
+    const before = `{\n  "hooks": {\n    "Stop": [\n      { "command": "a" }, // first\n      { "command": "b" }\n    ]\n  }\n}\n`;
+    const added = json.append(before, ["hooks", "Stop"], { command: "ours" });
+    expect(json.get(added, ["hooks", "Stop"])).toEqual([
+      { command: "a" },
+      { command: "b" },
+      { command: "ours" },
+    ]);
+    expect(added).toContain('{ "command": "a" }, // first');
+    expect(json.removeAt(added, ["hooks", "Stop"], 2)).toBe(before);
+    expect(json.get(json.removeAt(added, ["hooks", "Stop"], 0), ["hooks", "Stop"])).toEqual([
+      { command: "b" },
+      { command: "ours" },
+    ]);
+    // A list the engine created goes away with its last element.
+    const created = json.append("{}\n", ["hooks", "Stop"], { command: "ours" });
+    expect(JSON.parse(json.removeAt(created, ["hooks", "Stop"], 0))).toEqual({ hooks: {} });
+    expect(() => json.append('{ "hooks": { "Stop": {} } }', ["hooks", "Stop"], 1)).toThrow(/not a list/);
+  });
+
   it("refuses a file it cannot parse", () => {
     expect(() => json.set('{ "a": ', ["x"], 1)).toThrow(ConfigError);
     expect(() => json.get("[1]", ["x"])).toThrow(/not a JSON object/);

@@ -17,6 +17,22 @@
   }
 }
 
+=== .github/mcp.json (json) → mcpServers . demo-remote
+{
+  "type": "http",
+  "tools": [
+    "*"
+  ],
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
+}
+
+=== .agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === .github/agents/demo-reviewer.agent.md
 ---
 name: demo-reviewer
@@ -29,6 +45,34 @@ tools:
 ---
 
 You review changes. Use demo/doctor to check the environment.
+
+=== .github/hooks/demo-greet.json
+{
+  "version": 1,
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "echo demo ready"
+      }
+    ]
+  }
+}
+
+=== .github/hooks/demo-guard.json
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "matcher": "Bash|Edit",
+        "command": "node .agentpkg/demo/hooks/guard.mjs",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
 
 === .github/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>

@@ -1,5 +1,6 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Codex; it gets the harness's default tools
 [info] command:ship skipped: custom prompts are deprecated in Codex and user-only; ship it as a skill
+[warn] hook:guard Codex runs a new hook only after you review and trust it with /hooks
 
 === .codex/config.toml (toml) → mcp_servers . demo
 {
@@ -17,6 +18,41 @@
   "startup_timeout_sec": 60,
   "tool_timeout_sec": 300
 }
+
+=== .codex/config.toml (toml) → mcp_servers . demo-remote
+{
+  "url": "https://mcp.example.com/mcp",
+  "bearer_token_env_var": "DEMO_API_TOKEN",
+  "http_headers": {
+    "X-Client": "demo"
+  },
+  "tool_timeout_sec": 120
+}
+
+=== .codex/hooks.json (json) → hooks . PreToolUse [] (one element)
+{
+  "matcher": "Bash|Edit",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"$(git rev-parse --show-toplevel)/.agentpkg/demo/hooks\"/guard.mjs",
+      "timeout": 10
+    }
+  ]
+}
+
+=== .codex/hooks.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo demo ready"
+    }
+  ]
+}
+
+=== .agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>

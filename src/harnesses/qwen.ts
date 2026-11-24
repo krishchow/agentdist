@@ -1,9 +1,11 @@
 import { defineHarness } from "../harness/define";
-import { dialect } from "../harness/dialect";
+import { CANONICAL_TOOLS, dialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
+import { HOOK_EVENTS } from "../schema/manifest";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { hooksConfig } from "../surfaces/hooks";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
 const home = dotHome(".qwen", "QWEN_HOME");
@@ -37,7 +39,32 @@ export const qwen = defineHarness({
       file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({}, { toolTimeout: { field: "timeout", unit: "ms" } }),
+      stdio: stdioEntry({}, { toolTimeout: { field: "timeout", unit: "ms" } }),
+      http: httpEntry(
+        {},
+        { url: "httpUrl", envRef: (name) => `\${${name}}`, toolTimeout: { field: "timeout", unit: "ms" } },
+      ),
+    }),
+    hook: hooksConfig({
+      file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
+      format: "json",
+      events: Object.fromEntries(HOOK_EVENTS.map((event) => [event, event])),
+      projectDir: "$QWEN_PROJECT_DIR",
+      // A matcher made only of Claude Code's tool names is accepted as it is.
+      tools: Object.fromEntries(CANONICAL_TOOLS.map((tool) => [tool, tool])),
+      advice: "Qwen Code asks you to approve a project's hooks once before it runs them",
+      keyPath: (hook) => ["hooks", hook.event],
+      item: (hook) => ({
+        ...(hook.tools ? { matcher: hook.tools.join("|") } : {}),
+        hooks: [
+          {
+            type: "command",
+            command: hook.command,
+            name: hook.name,
+            ...(hook.timeoutSec ? { timeout: hook.timeoutSec } : {}),
+          },
+        ],
+      }),
     }),
   },
   sources: [
@@ -45,6 +72,7 @@ export const qwen = defineHarness({
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md",
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/sub-agents.md",
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/commands.md",
+    "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/hooks.md",
     "https://github.com/QwenLM/qwen-code/tree/main/docs/developers/tools",
   ],
 });

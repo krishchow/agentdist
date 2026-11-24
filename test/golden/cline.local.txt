@@ -1,5 +1,8 @@
 [info] agent:reviewer skipped: Cline does not document a subagent file format
 [info] mcpServer:demo skipped: no local-scope MCP configuration
+[info] mcpServer:demo-remote skipped: no local-scope MCP configuration
+[info] hook:guard skipped: Cline hooks are one script per event with their own input and output contract
+[info] hook:greet skipped: Cline hooks are one script per event with their own input and output contract
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>

@@ -17,7 +17,7 @@ import type { Env } from "../harness/define";
 import { displayPath } from "../ops/plan";
 import type { ConfigFormat, Diagnostic, Plan } from "../ops/types";
 import type { Scope } from "../schema/manifest";
-import { ConfigError, canonicalJson, editorFor } from "./config";
+import { arrayAt, ConfigError, canonicalJson, editorFor } from "./config";
 import {
   fromLedgerPath,
   hashBytes,
@@ -126,10 +126,22 @@ class Transaction {
 
 interface ConfigEdit {
   format: ConfigFormat;
-  keyPath: string[];
-  /** `undefined` removes the key. */
-  value: unknown;
+  apply(text: string): string;
 }
+
+/** Remove the element whose value hashes to `hash`, if it is still there. */
+function removeItemByHash(format: ConfigFormat, keyPath: string[], hash: string): (text: string) => string {
+  return (text) => {
+    const editor = editorFor(format);
+    const index = arrayAt(editor, text, keyPath).findIndex((v) => hashBytes(canonicalJson(v)) === hash);
+    return index < 0 ? text : editor.removeAt(text, keyPath, index);
+  };
+}
+
+const sameItem = (
+  a: { path: string; keyPath: string[]; hash: string },
+  b: { path: string; keyPath: string[]; hash: string },
+) => a.path === b.path && a.hash === b.hash && a.keyPath.join("\u0000") === b.keyPath.join("\u0000");
 
 function readText(path: string): string {
   return existsSync(path) ? readFileSync(path, "utf8") : "";
@@ -271,6 +283,8 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       harnesses: [...new Set(config.claims.map((c) => c.harness))],
       ...(createdFile ? { createdFile: true } : {}),
     });
+    const record = nextConfigs.at(-1)!;
+    if (owned?.adopted) record.adopted = true;
     let current: unknown;
     try {
       current = editorFor(config.format).get(readText(config.path), config.keyPath);
@@ -281,14 +295,21 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     }
     if (current === undefined) {
       actions.push({ type: "create", target });
-      queue(config.path, config);
+      queue(config.path, {
+        format: config.format,
+        apply: (text) => editorFor(config.format).set(text, config.keyPath, config.value),
+      });
     } else if (canonicalJson(current) === wanted) {
+      if (!owned) record.adopted = true;
       actions.push({ type: owned ? "unchanged" : "adopt", target });
     } else if (owned) {
       const edited = hashBytes(canonicalJson(current)) !== owned.hash;
       if (edited) backupConfigs.add(config.path);
       actions.push({ type: "update", target, detail: edited ? "your edits were backed up" : undefined });
-      queue(config.path, config);
+      queue(config.path, {
+        format: config.format,
+        apply: (text) => editorFor(config.format).set(text, config.keyPath, config.value),
+      });
     } else if (options.force) {
       backupConfigs.add(config.path);
       actions.push({
@@ -296,7 +317,10 @@ export function applyInstall(options: InstallOptions): ApplyResult {
         target,
         detail: "replaced an entry that was not installed by this package; backed up",
       });
-      queue(config.path, config);
+      queue(config.path, {
+        format: config.format,
+        apply: (text) => editorFor(config.format).set(text, config.keyPath, config.value),
+      });
     } else {
       conflicts.push({
         target,
@@ -307,6 +331,7 @@ export function applyInstall(options: InstallOptions): ApplyResult {
 
   for (const entry of previous?.configs ?? []) {
     if (nextConfigs.some((c) => sameKey(c, entry.path, entry.keyPath))) continue;
+    if (entry.adopted) continue;
     const path = fromLedgerPath(entry.path, root);
     const target = `${show(path)} → ${entry.keyPath.join(".")}`;
     let current: unknown;
@@ -326,7 +351,61 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       continue;
     }
     actions.push({ type: "remove", target });
-    queue(path, { format: entry.format, keyPath: entry.keyPath, value: undefined });
+    queue(path, {
+      format: entry.format,
+      apply: (text) => editorFor(entry.format).remove(text, entry.keyPath),
+    });
+    if (entry.createdFile) mayDelete.add(path);
+  }
+
+  const nextItems: Ledger["items"] = [];
+  for (const item of plan.items) {
+    const stored = toLedgerPath(item.path, root);
+    const target = `${show(item.path)} → ${item.keyPath.join(".")}[]`;
+    const hash = hashBytes(canonicalJson(item.value));
+    const record = { path: stored, keyPath: item.keyPath, hash };
+    const owned = previous?.items.find((entry) => sameItem(entry, record));
+    const createdFile =
+      owned?.createdFile ??
+      (previous?.items.some((entry) => entry.path === stored && entry.createdFile) || !existsSync(item.path));
+    nextItems.push({
+      ...record,
+      format: item.format,
+      harnesses: [...new Set(item.claims.map((c) => c.harness))],
+      ...(createdFile ? { createdFile: true } : {}),
+    });
+    let present: boolean;
+    try {
+      const current = arrayAt(editorFor(item.format), readText(item.path), item.keyPath);
+      present = current.some((value) => hashBytes(canonicalJson(value)) === hash);
+    } catch (e) {
+      if (!(e instanceof ConfigError)) throw e;
+      conflicts.push({ target: show(item.path), reason: `${e.message}; fix the file and run again` });
+      continue;
+    }
+    if (present) actions.push({ type: owned ? "unchanged" : "adopt", target });
+    else {
+      actions.push({ type: "create", target });
+      queue(item.path, {
+        format: item.format,
+        apply: (text) => editorFor(item.format).append(text, item.keyPath, item.value),
+      });
+    }
+  }
+  for (const entry of previous?.items ?? []) {
+    if (nextItems.some((next) => sameItem(next, entry))) continue;
+    const path = fromLedgerPath(entry.path, root);
+    let present = false;
+    try {
+      const current = arrayAt(editorFor(entry.format), readText(path), entry.keyPath);
+      present = current.some((value) => hashBytes(canonicalJson(value)) === entry.hash);
+    } catch {
+      // Unparseable, or no longer a list: nothing of ours can be identified in it.
+    }
+    // An element the user edited no longer matches, and is theirs now.
+    if (!present) continue;
+    actions.push({ type: "remove", target: `${show(path)} → ${entry.keyPath.join(".")}[]` });
+    queue(path, { format: entry.format, apply: removeItemByHash(entry.format, entry.keyPath, entry.hash) });
     if (entry.createdFile) mayDelete.add(path);
   }
 
@@ -348,13 +427,7 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       if (backupConfigs.has(path))
         actions.push({ type: "backup", target: show(path), detail: show(txn.backup(path)) });
       let text = readText(path);
-      for (const edit of list) {
-        const editor = editorFor(edit.format);
-        text =
-          edit.value === undefined
-            ? editor.remove(text, edit.keyPath)
-            : editor.set(text, edit.keyPath, edit.value as never);
-      }
+      for (const edit of list) text = edit.apply(text);
       if (mayDelete.has(path) && editorFor(list[0]!.format).isHollow(text)) txn.remove(path, root);
       else txn.write(path, text);
     }
@@ -369,8 +442,9 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       harnesses: options.harnessIds,
       files: nextFiles,
       configs: nextConfigs,
+      items: nextItems,
     };
-    if (plan.files.length === 0 && plan.configs.length === 0) txn.remove(ledgerFile, root);
+    if (plan.files.length + plan.configs.length + plan.items.length === 0) txn.remove(ledgerFile, root);
     else txn.write(ledgerFile, `${JSON.stringify(ledger, null, 2)}\n`);
   } catch (error) {
     txn.rollback();
@@ -440,6 +514,7 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
         configs.push({ ...entry, harnesses: left });
         continue;
       }
+      if (entry.adopted) continue;
       const path = fromLedgerPath(entry.path, root);
       const target = `${show(path)} → ${entry.keyPath.join(".")}`;
       const editor = editorFor(entry.format);
@@ -464,6 +539,27 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       texts.set(path, editor.remove(text, entry.keyPath));
       if (entry.createdFile) mayDelete.set(path, entry.format);
     }
+    const items: Ledger["items"] = [];
+    for (const entry of ledger.items) {
+      const left = remaining(entry.harnesses);
+      if (left.length > 0) {
+        items.push({ ...entry, harnesses: left });
+        continue;
+      }
+      const path = fromLedgerPath(entry.path, root);
+      const text = texts.get(path) ?? readText(path);
+      let next: string;
+      try {
+        next = removeItemByHash(entry.format, entry.keyPath, entry.hash)(text);
+      } catch {
+        continue;
+      }
+      // Unchanged text means the element is gone or was edited, and is the user's now.
+      if (next === text) continue;
+      actions.push({ type: "remove", target: `${show(path)} → ${entry.keyPath.join(".")}[]` });
+      texts.set(path, next);
+      if (entry.createdFile) mayDelete.set(path, entry.format);
+    }
     for (const [path, text] of texts) {
       const format = mayDelete.get(path);
       if (format && editorFor(format).isHollow(text)) txn.remove(path, root);
@@ -471,10 +567,10 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
     }
 
     const harnesses = remaining(ledger.harnesses);
-    if (harnesses.length === 0 || (Object.keys(files).length === 0 && configs.length === 0)) {
+    if (harnesses.length === 0 || Object.keys(files).length + configs.length + items.length === 0) {
       txn.remove(ledgerFile, root);
     } else {
-      txn.write(ledgerFile, `${JSON.stringify({ ...ledger, harnesses, files, configs }, null, 2)}\n`);
+      txn.write(ledgerFile, `${JSON.stringify({ ...ledger, harnesses, files, configs, items }, null, 2)}\n`);
     }
   } catch (error) {
     txn.rollback();

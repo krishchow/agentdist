@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { compactEntry } from "../surfaces/mcp";
+import { compactEntry, headerEnv } from "../surfaces/mcp";
 import { usesRefs } from "./content";
 import { json, type PackTarget } from "./types";
 
@@ -43,7 +43,39 @@ export const agentPlugin: PackTarget = {
     if (!/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(pkg.name) || pkg.name.length > 64) {
       throw new Error(`agent-plugin: "${pkg.name}" is not a valid plugin name in this format`);
     }
-    const servers = pkg.nodes.filter((n) => n.kind === "mcpServer");
+    const notes: string[] = [];
+    const servers: Record<string, unknown> = {};
+    for (const node of pkg.nodes) {
+      if (node.kind === "hook") {
+        notes.push(`hook "${node.name}" is left out: the format carries only skills and MCP servers`);
+      } else if (node.kind === "mcpServer" && node.transport === "stdio") {
+        servers[node.name] = compactEntry({
+          type: "stdio",
+          command: node.command,
+          args: node.args,
+          env: node.env,
+        });
+        if (node.envPassthrough.length) {
+          notes.push(
+            `server "${node.name}": the format cannot name the variables a server needs (${node.envPassthrough.join(", ")}); each client decides what it inherits`,
+          );
+        }
+      } else if (node.kind === "mcpServer") {
+        // Clients must not expand anything in a remote server's headers, so a header that needs a
+        // variable cannot be expressed, and writing the credential itself is not an option.
+        if (headerEnv(node).length) {
+          notes.push(
+            `server "${node.name}" is left out: the format's header values are literal, and it needs ${headerEnv(node).join(", ")}`,
+          );
+        } else {
+          servers[node.name] = compactEntry({
+            type: "streamable-http",
+            url: node.url,
+            headers: node.headers,
+          });
+        }
+      }
+    }
     const onboarding = manifest.onboardingSkill;
     const codex = options.codex === false ? undefined : options.codex === true ? {} : options.codex;
 
@@ -77,22 +109,12 @@ export const agentPlugin: PackTarget = {
         : undefined,
     };
     const files = [{ path: "plugin.json", content: json(plugin) }];
-    if (servers.length) {
+    if (Object.keys(servers).length) {
       files.push({
         path: "mcp.json",
-        content: json({
-          $schema: `${SPEC}/mcp.schema.json`,
-          // The format has no way to name host variables a server needs: each client decides what
-          // a server inherits, so `envPassthrough` cannot be expressed here.
-          mcpServers: Object.fromEntries(
-            servers.map((s) => [
-              s.name,
-              compactEntry({ type: "stdio", command: s.command, args: s.args, env: s.env }),
-            ]),
-          ),
-        }),
+        content: json({ $schema: `${SPEC}/mcp.schema.json`, mcpServers: servers }),
       });
     }
-    return { files };
+    return { files, notes };
   },
 };

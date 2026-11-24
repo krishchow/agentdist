@@ -3,7 +3,7 @@ import { defineHarness, type Env, unsupported } from "../harness/define";
 import { dialect } from "../harness/dialect";
 import { configRootExists, inConfig, inProject } from "../harness/locations";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
 const home = (env: Env) => env.vars.PI_CODING_AGENT_DIR || join(env.home, ".pi", "agent");
@@ -28,8 +28,13 @@ export const pi = defineHarness({
       file: { user: inConfig("mcp.json"), local: inProject(".pi", "mcp.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({}, { toolTimeout: { field: "timeout", unit: "s" } }),
+      stdio: stdioEntry({}, { toolTimeout: { field: "timeout", unit: "s" } }),
+      http: httpEntry(
+        { type: "http" },
+        { envRef: (name) => `\${${name}}`, toolTimeout: { field: "timeout", unit: "s" } },
+      ),
     }),
+    hook: unsupported("pi hooks are TypeScript extensions, not commands"),
   },
   sources: [
     "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/mcp.md",

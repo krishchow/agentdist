@@ -1,14 +1,18 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { install, status, uninstall } from "../src/api";
+import { install, missingEnv, status, uninstall } from "../src/api";
 import { defineHarness, unsupported } from "../src/harness/define";
 import { dialect } from "../src/harness/dialect";
 import { dotHome, inConfig, inHome, inProject } from "../src/harness/locations";
 import { claude } from "../src/harnesses/claude";
+import { codex } from "../src/harnesses/codex";
+import { cursor } from "../src/harnesses/cursor";
+import { gemini } from "../src/harnesses/gemini";
+import { zed } from "../src/harnesses/zed";
 import type { Package } from "../src/ir/nodes";
 import { markdownAgents } from "../src/surfaces/agents";
-import { mcpConfig, stdioEntry } from "../src/surfaces/mcp";
+import { httpEntry, mcpConfig, stdioEntry } from "../src/surfaces/mcp";
 import { skillsDir } from "../src/surfaces/skills";
 import { demo, read, sandbox } from "./helpers";
 
@@ -50,8 +54,27 @@ describe("install into Claude Code", () => {
           env: { DEMO_MODE: "1" },
           timeout: 300000,
         },
+        "demo-remote": {
+          type: "http",
+          url: "https://mcp.example.com/mcp",
+          // A reference for Claude Code to resolve; the installer never sees the token.
+          headers: { Authorization: "Bearer ${DEMO_API_TOKEN}", "X-Client": "demo" },
+        },
       },
     });
+
+    expect(JSON.parse(read(env.home, ".claude/settings.json"))).toEqual({
+      hooks: {
+        PreToolUse: [
+          {
+            matcher: "Bash|Edit",
+            hooks: [{ type: "command", command: 'node "$HOME/.agentpkg/demo/hooks"/guard.mjs', timeout: 10 }],
+          },
+        ],
+        SessionStart: [{ hooks: [{ type: "command", command: "echo demo ready" }] }],
+      },
+    });
+    expect(statSync(join(env.home, ".agentpkg/demo/hooks/guard.mjs")).mode & 0o111).not.toBe(0);
     expect(status("demo", env).user?.harnesses).toEqual(["claude"]);
   });
 
@@ -202,7 +225,7 @@ describe("ownership", () => {
     if (ship?.kind === "skill") ship.doc.body = "changed";
     // An inline TOML-style trap is not available in JSON, so break the config file's directory instead.
     const server = next.nodes.find((n) => n.kind === "mcpServer");
-    if (server?.kind === "mcpServer") server.command = "changed";
+    if (server?.kind === "mcpServer" && server.transport === "stdio") server.command = "changed";
     const broken = defineHarness({
       ...claude,
       kinds: {
@@ -211,7 +234,8 @@ describe("ownership", () => {
           file: { user: inHome(".claude", "skills", "demo-setup", "SKILL.md", "impossible.json") },
           format: "json",
           keyPath: ["mcpServers"],
-          entry: stdioEntry(),
+          stdio: stdioEntry(),
+          http: httpEntry(),
         }),
       },
     });
@@ -219,6 +243,138 @@ describe("ownership", () => {
       install({ pkg: next, harnesses: [broken], scope: "user", env, registry: [broken] }),
     ).toThrow();
     expect(read(skill)).toBe(before);
+  });
+});
+
+describe("hooks", () => {
+  const settings = (env: { home: string }) => join(env.home, ".claude/settings.json");
+
+  it("adds one element to the user's hook lists and takes only that one back out", () => {
+    const env = sandbox();
+    const before = `{
+  // my settings
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "mine.sh" }] }
+    ]
+  }
+}
+`;
+    mkdirSync(join(env.home, ".claude"));
+    writeFileSync(settings(env), before);
+    install({ pkg: demo(), harnesses: [claude], scope: "user", env });
+    const after = read(settings(env));
+    expect(after).toContain("// my settings");
+    expect(after).toContain('{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "mine.sh" }] }');
+    expect(after).toContain("guard.mjs");
+    expect(after).toContain("echo demo ready");
+
+    // Installing again does not register the hook twice.
+    install({ pkg: demo(), harnesses: [claude], scope: "user", env });
+    expect(read(settings(env)).match(/guard\.mjs/g)).toHaveLength(1);
+
+    uninstall({ pkgName: "demo", scope: "user", env });
+    expect(read(settings(env))).toBe(before);
+    expect(existsSync(join(env.home, ".agentpkg"))).toBe(false);
+  });
+
+  it("replaces its own registration when the hook changes, and leaves one the user edited", () => {
+    const env = sandbox();
+    install({ pkg: demo(), harnesses: [claude], scope: "user", env });
+    const next = demo();
+    const guard = next.nodes.find((n) => n.kind === "hook" && n.name === "guard");
+    if (guard?.kind === "hook") guard.timeoutSec = 30;
+    install({ pkg: next, harnesses: [claude], scope: "user", env });
+    const hooks = JSON.parse(read(settings(env))).hooks;
+    expect(hooks.PreToolUse).toHaveLength(1);
+    expect(hooks.PreToolUse[0].hooks[0].timeout).toBe(30);
+
+    // The user changes the registration: it no longer matches what was written, so it is theirs.
+    hooks.PreToolUse[0].matcher = "Bash";
+    writeFileSync(settings(env), JSON.stringify({ hooks }, null, 2));
+    uninstall({ pkgName: "demo", scope: "user", env });
+    expect(JSON.parse(read(settings(env))).hooks).toEqual({ PreToolUse: [hooks.PreToolUse[0]] });
+  });
+
+  it("does not register a hook twice for a harness that also runs Claude Code's", () => {
+    const env = sandbox();
+    install({ pkg: demo(), harnesses: [claude, cursor], scope: "local", env });
+    expect(read(env.projectRoot, ".claude/settings.json")).toContain("guard.mjs");
+    expect(existsSync(join(env.projectRoot, ".cursor/hooks.json"))).toBe(false);
+
+    // On its own, Cursor gets its own registration, in its own shape and tool names.
+    const alone = sandbox();
+    install({ pkg: demo(), harnesses: [cursor], scope: "local", env: alone });
+    expect(JSON.parse(read(alone.projectRoot, ".cursor/hooks.json"))).toEqual({
+      version: 1,
+      hooks: {
+        preToolUse: [
+          {
+            command: 'node "$CURSOR_PROJECT_DIR/.agentpkg/demo/hooks"/guard.mjs',
+            matcher: "Shell|Write",
+            timeout: 10,
+          },
+        ],
+        sessionStart: [{ command: "echo demo ready" }],
+      },
+    });
+    uninstall({ pkgName: "demo", scope: "local", env: alone });
+    expect(existsSync(join(alone.projectRoot, ".cursor"))).toBe(false);
+  });
+
+  it("leaves a key that was already there when it arrived", () => {
+    const env = sandbox();
+    mkdirSync(join(env.projectRoot, ".cursor"));
+    const mine = { version: 1, hooks: { stop: [{ command: "mine.sh" }] } };
+    writeFileSync(join(env.projectRoot, ".cursor/hooks.json"), JSON.stringify(mine, null, 2));
+    install({ pkg: demo(), harnesses: [cursor], scope: "local", env });
+    uninstall({ pkgName: "demo", scope: "local", env });
+    expect(JSON.parse(read(env.projectRoot, ".cursor/hooks.json"))).toEqual(mine);
+  });
+});
+
+describe("remote MCP servers", () => {
+  it("are written in each harness's own shape, never with a credential", () => {
+    const env = sandbox();
+    env.vars.DEMO_API_TOKEN = "s3cret";
+    install({ pkg: demo(), harnesses: [codex, cursor, gemini], scope: "user", env });
+    const toml = read(env.home, ".codex/config.toml");
+    expect(toml).toContain('bearer_token_env_var = "DEMO_API_TOKEN"');
+    expect(
+      JSON.parse(read(env.home, ".cursor/mcp.json")).mcpServers["demo-remote"].headers.Authorization,
+    ).toBe("Bearer ${env:DEMO_API_TOKEN}");
+    expect(JSON.parse(read(env.home, ".gemini/settings.json")).mcpServers["demo-remote"].httpUrl).toBe(
+      "https://mcp.example.com/mcp",
+    );
+    for (const file of [
+      ".codex/config.toml",
+      ".cursor/mcp.json",
+      ".gemini/settings.json",
+      ".agentpkg/demo.json",
+    ]) {
+      expect(read(env.home, file)).not.toContain("s3cret");
+    }
+  });
+
+  it("are skipped, with the reason, where a header cannot read the environment", () => {
+    const env = sandbox();
+    const result = install({ pkg: demo(), harnesses: [zed], scope: "user", env });
+    expect(result.diagnostics.find((d) => d.node === "mcpServer:demo-remote")?.message).toMatch(
+      /Zed cannot read DEMO_API_TOKEN from the environment/,
+    );
+    expect(Object.keys(JSON.parse(read(env.home, ".config/zed/settings.json")).context_servers)).toEqual([
+      "demo",
+    ]);
+  });
+
+  it("says which variables are not set where the installer runs", () => {
+    const env = sandbox();
+    expect(missingEnv(demo(), env).map((m) => [m.name, m.reason])).toEqual([
+      ["DEMO_API_TOKEN", "sent to the demo-remote server"],
+    ]);
+    env.vars.DEMO_API_TOKEN = "x";
+    expect(missingEnv(demo(), env)).toEqual([]);
   });
 });
 
@@ -239,8 +395,10 @@ describe("harnesses that share a directory", () => {
           file: { user: inConfig("mcp.json") },
           format: "json",
           keyPath: ["mcpServers"],
-          entry: stdioEntry(),
+          stdio: stdioEntry(),
+          http: "no remote servers",
         }),
+        hook: unsupported("no hooks"),
       },
       sources: [],
     });

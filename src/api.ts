@@ -10,6 +10,7 @@ import { NODE_KINDS, type NodeKind, type Package } from "./ir/nodes";
 import { planInstall } from "./ops/plan";
 import type { Plan } from "./ops/types";
 import { SCOPES, type Scope } from "./schema/manifest";
+import { headerEnv } from "./surfaces/mcp";
 
 export { ENGINE_VERSION };
 
@@ -126,4 +127,30 @@ export function status(pkgName: string, env: Env): Partial<Record<Scope, Ledger>
     if (ledger) found[scope] = ledger;
   }
   return found;
+}
+
+export interface MissingEnv {
+  name: string;
+  description?: string;
+  /** Why the package needs it: declared required, or used in a remote server's header. */
+  reason: string;
+}
+
+/**
+ * Variables the package needs that are not set where the installer is running. This is a hint and
+ * no more: a harness started from a desktop launcher does not see what a shell exports, and one
+ * started from another shell may see something else.
+ */
+export function missingEnv(pkg: Package, env: Env): MissingEnv[] {
+  const needed = new Map<string, string>();
+  for (const [name, declared] of Object.entries(pkg.manifest.environment)) {
+    if (declared.required) needed.set(name, "required");
+  }
+  for (const node of pkg.nodes) {
+    if (node.kind !== "mcpServer" || node.transport !== "http") continue;
+    for (const name of headerEnv(node)) needed.set(name, `sent to the ${node.name} server`);
+  }
+  return [...needed]
+    .filter(([name]) => !env.vars[name])
+    .map(([name, reason]) => ({ name, reason, description: pkg.manifest.environment[name]?.description }));
 }

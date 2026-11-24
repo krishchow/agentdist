@@ -1,4 +1,6 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Kilo Code; it gets the harness's default tools
+[info] hook:guard skipped: Kilo Code hooks are code plugins, not commands
+[info] hook:greet skipped: Kilo Code hooks are code plugins, not commands
 
 === ~/.config/kilo/kilo.json (jsonc) → mcp . demo
 {
@@ -12,6 +14,17 @@
     "DEMO_MODE": "1"
   },
   "enabled": true
+}
+
+=== ~/.config/kilo/kilo.json (jsonc) → mcp . demo-remote
+{
+  "type": "remote",
+  "enabled": true,
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer {env:DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
 }
 
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)

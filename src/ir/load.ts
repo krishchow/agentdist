@@ -4,8 +4,9 @@ import type { z } from "zod";
 import { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "../schema/content";
 import { AgentPkg, MANIFEST_FILE } from "../schema/manifest";
 import { parseDoc } from "./markdown";
-import type { AgentNode, CommandNode, McpServerNode, Node, Package, SkillFile, SkillNode } from "./nodes";
+import type { AgentNode, CommandNode, Node, Package, SkillFile, SkillNode } from "./nodes";
 import { findRefs } from "./refs";
+import { usesHooksDir } from "./templates";
 
 /** Every problem found in a package, reported together instead of one per run. */
 export class PackageError extends Error {
@@ -20,6 +21,7 @@ export class PackageError extends Error {
 
 const TEXT_EXTENSIONS = new Set([".md", ".mdx", ".markdown", ".txt"]);
 const SKILL_FILE = "SKILL.md";
+const TOOL_EVENTS = new Set(["PreToolUse", "PostToolUse"]);
 
 function issues(error: z.ZodError, where: string): string[] {
   return error.issues.map((i) => `${where}${i.path.length ? ` → ${i.path.join(".")}` : ""}: ${i.message}`);
@@ -35,6 +37,19 @@ function walk(dir: string, base = dir): string[] {
       if (entry.isDirectory()) return walk(path, base);
       return entry.isFile() ? [relative(base, path).split(sep).join("/")] : [];
     });
+}
+
+function readFiles(dir: string): SkillFile[] {
+  return walk(dir).map((rel) => {
+    const abs = join(dir, rel);
+    const ext = rel.slice(rel.lastIndexOf("."));
+    return {
+      rel,
+      bytes: readFileSync(abs),
+      text: TEXT_EXTENSIONS.has(ext.toLowerCase()),
+      executable: (statSync(abs).mode & 0o111) !== 0,
+    };
+  });
 }
 
 function markdownFiles(dir: string): string[] {
@@ -62,7 +77,7 @@ export function loadPackage(root: string): Package {
   const problems: string[] = [];
   const nodes: Node[] = [];
 
-  const contentDir = (key: "skills" | "agents" | "commands"): string | undefined => {
+  const contentDir = (key: "skills" | "agents" | "commands" | "hooksDir"): string | undefined => {
     const rel = manifest[key];
     if (rel === undefined) return undefined;
     const path = resolve(dir, rel);
@@ -99,18 +114,7 @@ export function loadPackage(root: string): Package {
         if (fm.data.name !== entry.name) {
           problems.push(`${where}: name "${fm.data.name}" must match its folder "${entry.name}"`);
         }
-        const files: SkillFile[] = walk(skillDir)
-          .filter((rel) => rel !== SKILL_FILE)
-          .map((rel) => {
-            const abs = join(skillDir, rel);
-            const ext = rel.slice(rel.lastIndexOf("."));
-            return {
-              rel,
-              bytes: readFileSync(abs),
-              text: TEXT_EXTENSIONS.has(ext.toLowerCase()),
-              executable: (statSync(abs).mode & 0o111) !== 0,
-            };
-          });
+        const files = readFiles(skillDir).filter((file) => file.rel !== SKILL_FILE);
         nodes.push({
           kind: "skill",
           name: entry.name,
@@ -180,16 +184,33 @@ export function loadPackage(root: string): Package {
   if (!version)
     problems.push(`${MANIFEST_FILE}: no "version", and no package.json beside it to take one from`);
 
+  const fill = (s: string) =>
+    s.replaceAll("{{version}}", version ?? "").replaceAll("{{name}}", manifest.name);
   for (const [name, server] of Object.entries(manifest.mcpServers)) {
-    const fill = (s: string) =>
-      s.replaceAll("{{version}}", version ?? "").replaceAll("{{name}}", manifest.name);
-    nodes.push({
-      kind: "mcpServer",
-      name,
-      ...server,
-      command: fill(server.command),
-      args: server.args.map(fill),
-    } satisfies McpServerNode);
+    if (server.transport === "http") nodes.push({ kind: "mcpServer", name, ...server });
+    else {
+      nodes.push({
+        kind: "mcpServer",
+        name,
+        ...server,
+        command: fill(server.command),
+        args: server.args.map(fill),
+      });
+    }
+  }
+
+  const hooksDir = contentDir("hooksDir");
+  const hookFiles = hooksDir ? readFiles(hooksDir) : [];
+  for (const [name, hook] of Object.entries(manifest.hooks)) {
+    if (usesHooksDir(hook.command) && !hooksDir) {
+      problems.push(
+        `${MANIFEST_FILE} → hooks.${name}: the command uses {{hooks_dir}} but the package has no hooksDir`,
+      );
+    }
+    if (hook.matcher && !TOOL_EVENTS.has(hook.event)) {
+      problems.push(`${MANIFEST_FILE} → hooks.${name}: only PreToolUse and PostToolUse take a matcher`);
+    }
+    nodes.push({ kind: "hook", name, ...hook });
   }
 
   problems.push(...checkRefs(nodes));
@@ -202,7 +223,7 @@ export function loadPackage(root: string): Package {
   if (nodes.length === 0) problems.push("the package declares nothing to install");
 
   if (problems.length > 0) throw new PackageError(dir, problems);
-  return { root: dir, name: manifest.name, version: version!, manifest, nodes };
+  return { root: dir, name: manifest.name, version: version!, manifest, nodes, hookFiles };
 }
 
 function packageJsonVersion(dir: string): string | undefined {
@@ -236,7 +257,7 @@ function checkRefs(nodes: Node[]): string[] {
     }
   };
   for (const node of nodes) {
-    if (node.kind === "mcpServer") continue;
+    if (node.kind === "mcpServer" || node.kind === "hook") continue;
     check(`${node.kind} ${node.name}`, node.doc.body, node.kind === "skill");
     if (node.kind === "skill") {
       for (const file of node.files) {

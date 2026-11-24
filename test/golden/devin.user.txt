@@ -13,6 +13,41 @@
   }
 }
 
+=== ~/.config/devin/mcp_config.json (json) → mcpServers . demo-remote
+{
+  "transport": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${env:DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
+}
+
+=== ~/.config/devin/config.json (json) → hooks . PreToolUse [] (one element)
+{
+  "matcher": "^(exec|edit)$",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"$HOME/.agentpkg/demo/hooks\"/guard.mjs",
+      "timeout": 10
+    }
+  ]
+}
+
+=== ~/.config/devin/config.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo demo ready"
+    }
+  ]
+}
+
+=== ~/.agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>
 

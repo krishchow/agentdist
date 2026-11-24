@@ -35,8 +35,121 @@
       "type": "string"
     },
     "mcpServers": {
-      "default": {},
       "description": "MCP servers to register with each harness, keyed by server name.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "default": "stdio",
+                "type": "string",
+                "const": "stdio"
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The executable to run. {{version}} and {{name}} are filled in."
+              },
+              "args": {
+                "default": [],
+                "description": "Arguments. {{version}} and {{name}} are filled in, e.g. \"my-server@{{version}}\".",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "env": {
+                "default": {},
+                "description": "Literal environment values the package sets. Never put a secret here.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "envPassthrough": {
+                "default": [],
+                "description": "Names of variables the server reads from the user's own environment. Harnesses that do not hand a server the whole environment are told to let these through; an unset one may arrive as an empty string.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                }
+              },
+              "startupTimeoutSec": {
+                "description": "How long a harness should wait for the server to start, where it lets a package say.",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "toolTimeoutSec": {
+                "description": "How long a harness should wait for one tool call, where it lets a package say.",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "command"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "type": "string",
+                "const": "http"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "The server's streamable HTTP endpoint."
+              },
+              "headers": {
+                "default": {},
+                "description": "Request headers. A value may reference a variable from the user's environment as {{env:NAME}}, e.g. \"Bearer {{env:ACME_TOKEN}}\". Never put a credential here.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "startupTimeoutSec": {
+                "description": "How long a harness should wait for the server to start, where it lets a package say.",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "toolTimeoutSec": {
+                "description": "How long a harness should wait for one tool call, where it lets a package say.",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "transport",
+              "url"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "hooks": {
+      "default": {},
+      "description": "Lifecycle hooks to register with each harness, keyed by a name of your choosing.",
       "type": "object",
       "propertyNames": {
         "type": "string",
@@ -45,60 +158,69 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "transport": {
-            "default": "stdio",
+          "event": {
             "type": "string",
-            "const": "stdio"
+            "enum": [
+              "SessionStart",
+              "SessionEnd",
+              "UserPromptSubmit",
+              "PreToolUse",
+              "PostToolUse",
+              "Stop",
+              "SubagentStop",
+              "PreCompact",
+              "Notification"
+            ]
+          },
+          "matcher": {
+            "description": "For tool events, the canonical tool names the hook applies to (Bash, Edit, Write, ...). Omit for every tool.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "command": {
             "type": "string",
             "minLength": 1,
-            "description": "The executable to run. {{version}} and {{name}} are filled in."
+            "description": "The shell command to run. {{hooks_dir}} is where the package's hook files are installed."
           },
-          "args": {
-            "default": [],
-            "description": "Arguments. {{version}} and {{name}} are filled in, e.g. \"my-server@{{version}}\".",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "env": {
-            "default": {},
-            "description": "Literal environment values the package sets. Never put a secret here.",
-            "type": "object",
-            "propertyNames": {
-              "type": "string"
-            },
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "envPassthrough": {
-            "default": [],
-            "description": "Names of variables the server reads from the user's own environment. Harnesses that do not hand a server the whole environment are told to let these through; an unset one may arrive as an empty string.",
-            "type": "array",
-            "items": {
-              "type": "string",
-              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
-            }
-          },
-          "startupTimeoutSec": {
-            "description": "How long a harness should wait for the server to start, where it lets a package say.",
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          },
-          "toolTimeoutSec": {
-            "description": "How long a harness should wait for one tool call, where it lets a package say.",
+          "timeoutSec": {
             "type": "integer",
             "exclusiveMinimum": 0,
             "maximum": 9007199254740991
           }
         },
         "required": [
+          "event",
           "command"
         ],
+        "additionalProperties": false
+      }
+    },
+    "hooksDir": {
+      "description": "Directory of files the hook commands run, installed once and shared by every harness.",
+      "type": "string"
+    },
+    "environment": {
+      "default": {},
+      "description": "Environment variables the package reads: what each is for and whether it is required. Used to tell the user what to set; values are never read or stored.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "default": false,
+            "description": "The package does not work without it. The installer says so when it is not set.",
+            "type": "boolean"
+          }
+        },
         "additionalProperties": false
       }
     },

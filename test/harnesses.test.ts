@@ -21,6 +21,10 @@ function render(harnessId: string, scope: Scope): string {
     out.push("", `=== ${show(config.path)} (${config.format}) → ${config.keyPath.join(" . ")}`);
     out.push(JSON.stringify(config.value, null, 2));
   }
+  for (const item of plan.items) {
+    out.push("", `=== ${show(item.path)} (${item.format}) → ${item.keyPath.join(" . ")} [] (one element)`);
+    out.push(JSON.stringify(item.value, null, 2));
+  }
   for (const file of [...plan.files].sort((a, b) => a.path.localeCompare(b.path))) {
     out.push("", `=== ${show(file.path)}${file.executable ? " (executable)" : ""}`);
     out.push(
@@ -47,14 +51,16 @@ describe("every harness", () => {
         const plan = planInstall(demo(), [harness], scope, env);
         // Nothing may land outside the scope's root.
         const root = scope === "user" ? env.home : env.projectRoot;
-        for (const op of [...plan.files, ...plan.configs]) {
+        for (const op of [...plan.files, ...plan.configs, ...plan.items]) {
           expect(op.path.startsWith(`${root}/`), `${op.path} is outside ${root}`).toBe(true);
         }
         // Every node is either installed or explained.
         const pkg = demo();
         for (const node of pkg.nodes) {
           const id = `${node.kind}:${node.name}`;
-          const done = [...plan.files, ...plan.configs].some((op) => op.claims.some((c) => c.node === id));
+          const done = [...plan.files, ...plan.configs, ...plan.items].some((op) =>
+            op.claims.some((c) => c.node === id),
+          );
           const explained = plan.diagnostics.some((d) => d.node === id && d.message.startsWith("skipped"));
           expect(done || explained, `${harness.id} silently dropped ${id}`).toBe(true);
         }
@@ -112,7 +118,7 @@ describe("harnesses installed together", () => {
       "local",
       env,
     );
-    expect(plan.configs.map((c) => displayPath(c.path, "local", env)).sort()).toEqual([
+    expect([...new Set(plan.configs.map((c) => displayPath(c.path, "local", env)))].sort()).toEqual([
       ".github/mcp.json",
       ".mcp.json",
     ]);

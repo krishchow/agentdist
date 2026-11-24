@@ -3,7 +3,7 @@ import { byScope, defineHarness, type LocCtx, unsupported } from "../harness/def
 import { dialect, proseToolRef } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownCommands } from "../surfaces/commands";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 import { skillsDir } from "../surfaces/skills";
 
@@ -36,8 +36,11 @@ export const cline = defineHarness({
       },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry(),
+      stdio: stdioEntry(),
+      // Header values are literal here, so a server that needs a variable is skipped.
+      http: httpEntry({ type: "streamableHttp" }),
     }),
+    hook: unsupported("Cline hooks are one script per event with their own input and output contract"),
   },
   sources: [
     "https://docs.cline.bot/mcp/mcp-overview.md",

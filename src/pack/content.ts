@@ -13,7 +13,7 @@ import type { PackFile } from "./types";
 /** Whether any content needs rendering before a harness can read it. */
 export function usesRefs(pkg: Package): boolean {
   return pkg.nodes.some((node) => {
-    if (node.kind === "mcpServer") return false;
+    if (node.kind === "mcpServer" || node.kind === "hook") return false;
     if (hasRefs(node.doc.body)) return true;
     return (
       node.kind === "skill" &&
@@ -70,6 +70,7 @@ export function pluginContent(
       agent: markdownAgents(at("agents"), { passthrough: true }),
       command: markdownCommands(at("commands"), { passthrough: true }),
       mcpServer: unsupported("declared in the plugin manifest"),
+      hook: unsupported("declared in the plugin manifest"),
     },
     sources: [],
   };

@@ -5,6 +5,7 @@ import { type Ref, replaceRefs } from "../ir/refs";
 import type { Scope } from "../schema/manifest";
 import {
   type Claim,
+  type ConfigItemOp,
   configKey,
   type Diagnostic,
   type FileOp,
@@ -12,6 +13,7 @@ import {
   type Plan,
   type PlannedConfig,
   type PlannedFile,
+  type PlannedItem,
 } from "./types";
 
 export function configRootOf(harness: HarnessDef, scope: Scope, env: Env): string {
@@ -94,8 +96,12 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   const proposed: Array<{ op: Op; claim: Claim; harness: HarnessDef }> = [];
   for (const harness of harnesses) {
     let current: Node | undefined;
-    const note = (level: Diagnostic["level"], message: string) =>
+    const note = (level: Diagnostic["level"], message: string) => {
+      // The same advice from several nodes is said once.
+      if (level === "warn" && diagnostics.some((d) => d.harness === harness.id && d.message === message))
+        return;
       diagnostics.push({ level, harness: harness.id, node: current ? nodeId(current) : undefined, message });
+    };
     const ctx = makeCtx(pkg, harness, scope, env, (message) => note("warn", message));
 
     for (const node of pkg.nodes) {
@@ -162,5 +168,41 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
     existing.claims.push(claim);
   }
 
-  return { files: [...files.values()], configs: [...configs.values()], diagnostics };
+  const items = new Map<string, PlannedItem>();
+  const claimItem = (op: ConfigItemOp, claim: Claim) => {
+    // Identity is the value itself: two harnesses sharing a file and wanting the same element share it.
+    const key = `${configKey(op)}\u0000${JSON.stringify(op.value)}`;
+    const existing = items.get(key);
+    if (existing) existing.claims.push(claim);
+    else {
+      const { coveredBy: _, preamble: __, ...item } = op;
+      items.set(key, { ...item, claims: [claim] });
+    }
+    for (const extra of op.preamble ?? []) {
+      const config = { type: "config" as const, path: op.path, format: op.format, ...extra };
+      const planned = configs.get(configKey(config));
+      if (planned) planned.claims.push(claim);
+      else configs.set(configKey(config), { ...config, claims: [claim] });
+    }
+  };
+  for (const { op, claim } of proposed) {
+    if (op.type === "config-item" && !op.coveredBy?.length) claimItem(op, claim);
+  }
+  for (const { op, claim } of proposed) {
+    if (op.type !== "config-item" || !op.coveredBy?.length) continue;
+    const covering = [...items.values()].find(
+      (item) =>
+        op.coveredBy?.includes(item.path) &&
+        item.claims.some((c) => c.node === claim.node && c.harness !== claim.harness),
+    );
+    if (covering) covering.claims.push(claim);
+    else claimItem(op, claim);
+  }
+
+  return {
+    files: [...files.values()],
+    configs: [...configs.values()],
+    items: [...items.values()],
+    diagnostics,
+  };
 }

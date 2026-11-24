@@ -13,6 +13,41 @@
   }
 }
 
+=== .factory/mcp.json (json) → mcpServers . demo-remote
+{
+  "type": "http",
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  }
+}
+
+=== .factory/settings.json (json) → hooks . PreToolUse [] (one element)
+{
+  "matcher": "Execute|Edit",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"$FACTORY_PROJECT_DIR/.agentpkg/demo/hooks\"/guard.mjs",
+      "timeout": 10
+    }
+  ]
+}
+
+=== .factory/settings.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo demo ready"
+    }
+  ]
+}
+
+=== .agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
+
 === .agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>
 

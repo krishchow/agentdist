@@ -10,6 +10,8 @@ export interface PackOutput {
   files: PackFile[];
   /** Directories the target owns outright: anything in them it did not just produce is stale. */
   ownedDirs?: string[];
+  /** Things the package has that this format cannot carry, for the author to see. */
+  notes?: string[];
 }
 
 /**

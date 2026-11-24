@@ -1,3 +1,5 @@
+[warn] hook:guard Qwen Code asks you to approve a project's hooks once before it runs them
+
 === .qwen/settings.json (json) → mcpServers . demo
 {
   "command": "npx",
@@ -10,6 +12,43 @@
   },
   "timeout": 300000
 }
+
+=== .qwen/settings.json (json) → mcpServers . demo-remote
+{
+  "httpUrl": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
+  },
+  "timeout": 120000
+}
+
+=== .qwen/settings.json (json) → hooks . PreToolUse [] (one element)
+{
+  "matcher": "Bash|Edit",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "node \"$QWEN_PROJECT_DIR/.agentpkg/demo/hooks\"/guard.mjs",
+      "name": "demo-guard",
+      "timeout": 10
+    }
+  ]
+}
+
+=== .qwen/settings.json (json) → hooks . SessionStart [] (one element)
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "echo demo ready",
+      "name": "demo-greet"
+    }
+  ]
+}
+
+=== .agentpkg/demo/hooks/guard.mjs (executable)
+<93 bytes, copied as is>
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>

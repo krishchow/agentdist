@@ -1,6 +1,9 @@
 [info] agent:reviewer skipped: Zed has no subagent definition files
 [info] command:ship skipped: Zed has no command files; a skill is its slash command
 [info] mcpServer:demo skipped: no local-scope MCP configuration
+[info] mcpServer:demo-remote skipped: no local-scope MCP configuration
+[info] hook:guard skipped: Zed has no lifecycle hooks
+[info] hook:greet skipped: Zed has no lifecycle hooks
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)
 <76 bytes, copied as is>

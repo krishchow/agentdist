@@ -29,8 +29,9 @@ export function runAuthorCommand(
       const from = pkg.version;
       pkg.version = args.asVersion;
       for (const node of pkg.nodes) {
-        if (node.kind !== "mcpServer") continue;
-        const raw = pkg.manifest.mcpServers[node.name]!;
+        if (node.kind !== "mcpServer" || node.transport !== "stdio") continue;
+        const raw = pkg.manifest.mcpServers[node.name];
+        if (raw?.transport !== "stdio") continue;
         const fill = (s: string) => s.replaceAll("{{version}}", pkg.version).replaceAll("{{name}}", pkg.name);
         node.command = fill(raw.command);
         node.args = raw.args.map(fill);
@@ -43,6 +44,7 @@ export function runAuthorCommand(
       );
     }
     const result = runPack(pkg, targets, { check: args.check });
+    for (const note of result.notes) io.err(`  note: ${note}\n`);
     for (const change of result.changes) {
       if (change.change !== "unchanged") io.out(`  ${change.change.padEnd(6)} ${change.path}\n`);
     }

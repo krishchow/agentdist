@@ -1,4 +1,4 @@
-import type { AgentPkg, McpServer } from "../schema/manifest";
+import type { AgentPkg, Hook, HttpServer, StdioServer } from "../schema/manifest";
 import type { Doc } from "./markdown";
 
 /**
@@ -8,7 +8,7 @@ import type { Doc } from "./markdown";
  */
 
 export interface SkillFile {
-  /** Path inside the skill folder, with forward slashes. */
+  /** Path inside the folder it was read from, with forward slashes. */
   rel: string;
   bytes: Uint8Array;
   /** Text files have their symbolic references resolved; other files are copied untouched. */
@@ -43,16 +43,32 @@ export interface CommandNode {
   doc: Doc;
 }
 
-export interface McpServerNode extends McpServer {
+export interface StdioServerNode extends StdioServer {
   kind: "mcpServer";
   name: string;
 }
+export interface HttpServerNode extends HttpServer {
+  kind: "mcpServer";
+  name: string;
+}
+export type McpServerNode = StdioServerNode | HttpServerNode;
 
-export type Node = SkillNode | AgentNode | CommandNode | McpServerNode;
+export interface HookNode extends Hook {
+  kind: "hook";
+  name: string;
+}
+
+export type Node = SkillNode | AgentNode | CommandNode | McpServerNode | HookNode;
 export type NodeKind = Node["kind"];
 export type NodeOf<K extends NodeKind> = Extract<Node, { kind: K }>;
 
-export const NODE_KINDS = ["skill", "agent", "command", "mcpServer"] as const satisfies readonly NodeKind[];
+export const NODE_KINDS = [
+  "skill",
+  "agent",
+  "command",
+  "mcpServer",
+  "hook",
+] as const satisfies readonly NodeKind[];
 
 export interface Package {
   /** Absolute path of the directory holding `agentpkg.json`. */
@@ -61,6 +77,8 @@ export interface Package {
   version: string;
   manifest: AgentPkg;
   nodes: Node[];
+  /** The contents of `hooksDir`: what the hook commands run. */
+  hookFiles: SkillFile[];
 }
 
 export function nodeId(node: Node): string {

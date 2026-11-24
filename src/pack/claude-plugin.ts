@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { dialect } from "../harness/dialect";
 import type { Package } from "../ir/nodes";
-import { compactEntry } from "../surfaces/mcp";
+import { renderHooksDir } from "../ir/templates";
+import type { JsonValue } from "../ops/types";
+import { claudeStyleHook } from "../surfaces/hooks";
+import { compactEntry, entryHeaders } from "../surfaces/mcp";
 import { pluginContent } from "./content";
 import { json, type PackTarget } from "./types";
 
@@ -15,12 +18,37 @@ const Options = z.strictObject({
   contentDir: z.string().default("plugins/claude"),
 });
 
+const envRef = (name: string) => `\${${name}}`;
+
 function mcpServers(pkg: Package) {
   return Object.fromEntries(
     pkg.nodes
       .filter((n) => n.kind === "mcpServer")
-      .map((s) => [s.name, compactEntry({ command: s.command, args: s.args, env: s.env })]),
+      .map((s) => [
+        s.name,
+        s.transport === "stdio"
+          ? compactEntry({ command: s.command, args: s.args, env: s.env })
+          : compactEntry({ type: "http", url: s.url, headers: entryHeaders(s, envRef) }),
+      ]),
   );
+}
+
+/** `hooks.json` in Claude Code's own shape, with commands pointed at the plugin's install directory. */
+function hooksFile(pkg: Package) {
+  const hooks: Record<string, JsonValue[]> = {};
+  const dir = `"\${CLAUDE_PLUGIN_ROOT}/${(pkg.manifest.hooksDir ?? "").replace(/^\.\//, "").replace(/\/$/, "")}"`;
+  for (const node of pkg.nodes) {
+    if (node.kind !== "hook") continue;
+    const hook = claudeStyleHook({
+      name: node.name,
+      event: node.event,
+      tools: node.matcher,
+      command: renderHooksDir(node.command, dir),
+      timeoutSec: node.timeoutSec,
+    });
+    hooks[node.event] = [...(hooks[node.event] ?? []), hook];
+  }
+  return Object.keys(hooks).length ? { hooks } : undefined;
 }
 
 /**
@@ -50,6 +78,8 @@ export const claudePlugin: PackTarget = {
     const elsewhere = (path: string | undefined, standard: string) =>
       path && path !== standard ? path : undefined;
     const servers = mcpServers(pkg);
+    const hooks = hooksFile(pkg);
+    const HOOKS_FILE = ".claude-plugin/hooks.json";
 
     const plugin = {
       name: pkg.name,
@@ -63,9 +93,11 @@ export const claudePlugin: PackTarget = {
       skills: elsewhere(content.skills, "./skills/"),
       agents: elsewhere(content.agents, "./agents/"),
       commands: elsewhere(content.commands, "./commands/"),
+      hooks: hooks ? `./${HOOKS_FILE}` : undefined,
       mcpServers: Object.keys(servers).length ? servers : undefined,
     };
     const files = [{ path: ".claude-plugin/plugin.json", content: json(plugin) }, ...content.files];
+    if (hooks) files.push({ path: HOOKS_FILE, content: json(hooks) });
 
     if (options.marketplace !== false) {
       const market = options.marketplace === true ? {} : options.marketplace;

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
+import type { StdioServerNode } from "../ir/nodes";
 import type { PackTarget } from "./types";
 
 const Options = z.strictObject({
@@ -27,7 +28,16 @@ export const dshBundle: PackTarget = {
     const options = Options.parse(raw);
     const npmPackage = options.npmPackage ?? packageJsonName(pkg.root);
     if (!npmPackage) throw new Error("dsh-bundle: set npmPackage, or add a package.json with a name");
-    const servers = pkg.nodes.filter((n) => n.kind === "mcpServer");
+    const servers = pkg.nodes.filter(
+      (n) => n.kind === "mcpServer" && n.transport === "stdio",
+    ) as StdioServerNode[];
+    const notes = pkg.nodes.flatMap((n) =>
+      n.kind === "hook" || (n.kind === "mcpServer" && n.transport === "http")
+        ? [
+            `${n.kind === "hook" ? "hook" : "remote server"} "${n.name}" is left out: this target writes stdio servers and skills only`,
+          ]
+        : [],
+    );
     const skills = pkg.manifest.skills?.replace(/^\.\//, "").replace(/\/$/, "");
 
     const lines = [
@@ -70,7 +80,7 @@ export const dshBundle: PackTarget = {
         "",
       );
     }
-    return { files: [{ path: options.file, content: `${lines.join("\n").trimEnd()}\n` }] };
+    return { files: [{ path: options.file, content: `${lines.join("\n").trimEnd()}\n` }], notes };
   },
 };
 

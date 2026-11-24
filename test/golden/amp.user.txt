@@ -1,5 +1,7 @@
 [info] agent:reviewer skipped: Amp has no user-defined subagents
 [info] command:ship skipped: Amp has no command files; ship it as a skill
+[info] hook:guard skipped: Amp hooks are code plugins, not commands
+[info] hook:greet skipped: Amp hooks are code plugins, not commands
 
 === ~/.config/amp/settings.json (jsonc) → amp.mcpServers . demo
 {
@@ -10,6 +12,15 @@
   ],
   "env": {
     "DEMO_MODE": "1"
+  }
+}
+
+=== ~/.config/amp/settings.json (jsonc) → amp.mcpServers . demo-remote
+{
+  "url": "https://mcp.example.com/mcp",
+  "headers": {
+    "Authorization": "Bearer ${DEMO_API_TOKEN}",
+    "X-Client": "demo"
   }
 }
 

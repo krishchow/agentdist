@@ -1,4 +1,7 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Kilo Code; it gets the harness's default tools
+[info] mcpServer:demo-remote skipped: Kilo Code ignores environment references in a project's config; install it at user scope
+[info] hook:guard skipped: Kilo Code hooks are code plugins, not commands
+[info] hook:greet skipped: Kilo Code hooks are code plugins, not commands
 
 === kilo.json (jsonc) → mcp . demo
 {

@@ -1,7 +1,8 @@
 import { defineHarness, unsupported } from "../harness/define";
 import { dialect, proseToolRef } from "../harness/dialect";
-import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import { compactEntry, mcpConfig } from "../surfaces/mcp";
+import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../harness/locations";
+import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks";
+import { compactEntry, headerEnv, mcpConfig } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("goose");
@@ -21,7 +22,7 @@ export const goose = defineHarness({
       file: { user: inConfig("config.yaml") },
       format: "yaml",
       keyPath: ["extensions"],
-      entry: (server) =>
+      stdio: (server) =>
         compactEntry({
           type: "stdio",
           name: server.name,
@@ -33,10 +34,49 @@ export const goose = defineHarness({
           env_keys: server.envPassthrough.length ? server.envPassthrough : undefined,
           timeout: server.toolTimeoutSec,
         }),
+      // The docs do not say how a header refers to the environment, so a server that needs a
+      // variable is skipped.
+      http: (server, ctx) =>
+        headerEnv(server).length > 0
+          ? {
+              skip: `${ctx.harness.label} does not document how a header reads the environment; add it by hand`,
+            }
+          : compactEntry({
+              type: "streamable_http",
+              name: server.name,
+              enabled: true,
+              uri: server.url,
+              headers: server.headers,
+              timeout: server.toolTimeoutSec,
+            }),
+    }),
+    // A hook lives in a plugin directory; each one gets a directory of its own, which needs no manifest.
+    hook: hooksDir({
+      dir: { user: inHome(".agents", "plugins"), local: inProject(".agents", "plugins") },
+      events: {
+        SessionStart: "SessionStart",
+        SessionEnd: "SessionEnd",
+        UserPromptSubmit: "UserPromptSubmit",
+        PreToolUse: "PreToolUse",
+        PostToolUse: "PostToolUse",
+        Stop: "Stop",
+      },
+      tools: { Bash: "shell", Write: "write", Edit: "edit" },
+      file: (hook) => ({
+        name: `${hook.name}/hooks/hooks.json`,
+        content: {
+          hooks: {
+            [hook.event]: [
+              claudeStyleHook({ ...hook, tools: hook.tools ? [anchored(hook.tools)] : undefined }),
+            ],
+          },
+        },
+      }),
     }),
   },
   sources: [
     "https://goose-docs.ai/docs/guides/config-files.md",
     "https://goose-docs.ai/docs/guides/context-engineering/using-skills.md",
+    "https://goose-docs.ai/docs/guides/context-engineering/hooks.md",
   ],
 });

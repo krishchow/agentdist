@@ -1,8 +1,9 @@
 import { defineHarness, unsupported } from "../harness/define";
-import { dialect } from "../harness/dialect";
+import { CANONICAL_TOOLS, dialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
-import { mcpConfig, stdioEntry } from "../surfaces/mcp";
+import { hooksDir } from "../surfaces/hooks";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { skillsDir } from "../surfaces/skills";
 
 const home = dotHome(".copilot", "COPILOT_HOME");
@@ -51,7 +52,40 @@ export const copilot = defineHarness({
       keyPath: ["mcpServers"],
       // A server inherits little more than PATH, so each variable it needs is referenced, with an
       // empty default so an unset one does not stop the server from starting.
-      entry: stdioEntry({ type: "stdio", tools: ["*"] }, { envRef: (name) => `\${${name}:-}` }),
+      stdio: stdioEntry({ type: "stdio", tools: ["*"] }, { envRef: (name) => `\${${name}:-}` }),
+      http: httpEntry({ type: "http", tools: ["*"] }, { envRef: (name) => `\${${name}}` }),
+    }),
+    // One definition file per hook. The PascalCase event names select Claude Code's matcher
+    // semantics and tool names, which is the contract a package's hook scripts are written against.
+    hook: hooksDir({
+      dir: { user: inConfig("hooks"), local: inConfig("hooks") },
+      events: {
+        SessionStart: "SessionStart",
+        SessionEnd: "SessionEnd",
+        UserPromptSubmit: "UserPromptSubmit",
+        PreToolUse: "PreToolUse",
+        PostToolUse: "PostToolUse",
+        Stop: "Stop",
+        SubagentStop: "SubagentStop",
+        PreCompact: "PreCompact",
+      },
+      tools: Object.fromEntries(CANONICAL_TOOLS.map((tool) => [tool, tool])),
+      file: (hook) => ({
+        name: `${hook.name}.json`,
+        content: {
+          version: 1,
+          hooks: {
+            [hook.event]: [
+              {
+                type: "command",
+                ...(hook.tools ? { matcher: hook.tools.join("|") } : {}),
+                command: hook.command,
+                ...(hook.timeoutSec ? { timeoutSec: hook.timeoutSec } : {}),
+              },
+            ],
+          },
+        },
+      }),
     }),
   },
   sources: [
@@ -59,6 +93,7 @@ export const copilot = defineHarness({
     "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills",
     "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
     "https://docs.github.com/en/copilot/reference/custom-agents-configuration",
+    "https://docs.github.com/en/copilot/reference/hooks-reference",
     "https://github.com/microsoft/vscode-docs/blob/main/docs/agents/reference/mcp-configuration.md",
     "https://github.com/microsoft/vscode-docs/blob/main/docs/agent-customization/agent-skills.md",
   ],
