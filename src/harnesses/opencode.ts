@@ -30,6 +30,8 @@ export function opencodeEntry(extra: Record<string, boolean> = {}) {
 /**
  * OpenCode's config has two dialects: servers directly under `mcp`, and, since V2, under
  * `mcp.servers`. The file on disk decides; a file with no servers yet gets the current one.
+ * OpenCode 1.19 was checked to load a server from either; a release from before V2 would not
+ * understand the newer one.
  */
 function mcpKeyPath(file: string, _ctx: PlanCtx): string[] {
   try {
