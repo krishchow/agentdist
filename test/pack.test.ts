@@ -101,6 +101,39 @@ describe("pack", () => {
     rmSync(dir, { recursive: true });
   });
 
+  it("writes a portable Agent Plugin, and refuses a package that does not fit the format", () => {
+    const dir = fixture({ "agent-plugin": { codex: { capabilities: ["Read"] } } }, true);
+    runPack(loadPackage(dir), PACK_TARGETS);
+    const plugin = readJson(dir, "plugin.json");
+    expect(plugin.$schema).toBe("https://agent-plugins.org/schemas/1.0.0/plugin.schema.json");
+    expect(plugin.extensions["com.openai"].onboardingSkill).toBe("./skills/setup/SKILL.md");
+    expect(plugin.extensions["com.openai"].interface.capabilities).toEqual(["Read"]);
+    // Only the closed set of top-level fields the format allows.
+    const allowed = [
+      "$schema",
+      "name",
+      "version",
+      "description",
+      "author",
+      "homepage",
+      "repository",
+      "license",
+      "keywords",
+      "extensions",
+    ];
+    expect(Object.keys(plugin).every((key) => allowed.includes(key))).toBe(true);
+    expect(readJson(dir, "mcp.json")).toEqual({
+      $schema: "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+      mcpServers: {
+        demo: { type: "stdio", command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } },
+      },
+    });
+    rmSync(dir, { recursive: true });
+
+    const withRefs = fixture({ "agent-plugin": {} });
+    expect(() => runPack(loadPackage(withRefs), PACK_TARGETS)).toThrow(/symbolic references/);
+  });
+
   it("rejects an unknown target and bad options", () => {
     const unknown = fixture({ nope: {} });
     expect(() => runPack(loadPackage(unknown), PACK_TARGETS)).toThrow(/unknown pack target "nope"/);

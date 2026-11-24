@@ -1,14 +1,18 @@
 [info] command:ship skipped: no command directory of its own; ship it as a skill
 
-=== .mcp.json (json) → mcpServers . demo
+=== .github/mcp.json (json) → mcpServers . demo
 {
   "type": "stdio",
+  "tools": [
+    "*"
+  ],
   "command": "npx",
   "args": [
     "-y",
     "demo-mcp@1.2.3"
   ],
   "env": {
+    "DEMO_TOKEN": "${DEMO_TOKEN:-}",
     "DEMO_MODE": "1"
   }
 }

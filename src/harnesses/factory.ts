@@ -24,8 +24,9 @@ export const factory = defineHarness({
       Grep: "Grep",
       WebFetch: "FetchUrl",
       WebSearch: "WebSearch",
+      // Not available to a droid, and always included, respectively: neither is listed.
       Task: null,
-      TodoWrite: "TodoWrite",
+      TodoWrite: null,
       NotebookEdit: null,
     },
     // A droid is given whole MCP servers through its own `mcpServers` field, not single tools.

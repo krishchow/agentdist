@@ -46,7 +46,12 @@ export const gemini = defineHarness({
       file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({}, { toolTimeout: { field: "timeout", unit: "ms" } }),
+      // Gemini strips variables that look like secrets (*KEY*, *TOKEN*, ...) from what a server
+      // inherits unless they are named here. An unset one resolves to an empty string.
+      entry: stdioEntry(
+        {},
+        { envRef: (name) => `\${${name}}`, toolTimeout: { field: "timeout", unit: "ms" } },
+      ),
     }),
   },
   sources: [

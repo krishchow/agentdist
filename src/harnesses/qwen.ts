@@ -1,5 +1,5 @@
 import { defineHarness } from "../harness/define";
-import { dialect, noToolGrants } from "../harness/dialect";
+import { dialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
@@ -13,9 +13,22 @@ export const qwen = defineHarness({
   label: "Qwen Code",
   configRoot: { user: home, local: ".qwen" },
   detect: configRootExists(home),
-  // MCP tools are named as in Claude Code. The built-in tool names a subagent's allowlist expects
-  // are not documented against the canonical ones, so the allowlist is not carried over.
-  dialect: dialect({ ...noToolGrants }),
+  // MCP tools are named as in Claude Code; the built-in tools are Gemini CLI's, mostly.
+  dialect: dialect({
+    tools: {
+      Read: "read_file",
+      Write: "write_file",
+      Edit: "edit",
+      Bash: "run_shell_command",
+      Glob: "glob",
+      Grep: "grep_search",
+      WebFetch: "web_fetch",
+      WebSearch: "web_search",
+      Task: "agent",
+      TodoWrite: "todo_write",
+      NotebookEdit: null,
+    },
+  }),
   kinds: {
     skill: sharedSkills(),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }),
@@ -32,5 +45,6 @@ export const qwen = defineHarness({
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md",
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/sub-agents.md",
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/commands.md",
+    "https://github.com/QwenLM/qwen-code/tree/main/docs/developers/tools",
   ],
 });

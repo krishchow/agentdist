@@ -39,5 +39,6 @@ export const claude = defineHarness({
     "https://code.claude.com/docs/en/skills",
     "https://code.claude.com/docs/en/sub-agents",
     "https://code.claude.com/docs/en/mcp",
+    "https://code.claude.com/docs/en/claude-directory",
   ],
 });

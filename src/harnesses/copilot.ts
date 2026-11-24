@@ -1,6 +1,6 @@
 import { defineHarness, unsupported } from "../harness/define";
 import { dialect } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig, inProject } from "../harness/locations";
+import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { skillsDir } from "../surfaces/skills";
@@ -43,17 +43,21 @@ export const copilot = defineHarness({
     ),
     command: unsupported("no command directory of its own; ship it as a skill"),
     mcpServer: mcpConfig({
-      // A root .mcp.json is the one project file both the CLI and VS Code read. Claude Code reads
-      // it too, with the same entry, so the two share it.
-      file: { user: inConfig("mcp-config.json"), local: inProject(".mcp.json") },
+      // Not the root .mcp.json, although Copilot reads it: Claude Code owns that file's entries, and
+      // the two need different ones. VS Code's Copilot harness reads only the root file and the
+      // user file, so a project install reaches the CLI and a user install reaches both.
+      file: { user: inConfig("mcp-config.json"), local: inConfig("mcp.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({ type: "stdio" }),
+      // A server inherits little more than PATH, so each variable it needs is referenced, with an
+      // empty default so an unset one does not stop the server from starting.
+      entry: stdioEntry({ type: "stdio", tools: ["*"] }, { envRef: (name) => `\${${name}:-}` }),
     }),
   },
   sources: [
     "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers",
     "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills",
+    "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
     "https://docs.github.com/en/copilot/reference/custom-agents-configuration",
     "https://github.com/microsoft/vscode-docs/blob/main/docs/agents/reference/mcp-configuration.md",
     "https://github.com/microsoft/vscode-docs/blob/main/docs/agent-customization/agent-skills.md",

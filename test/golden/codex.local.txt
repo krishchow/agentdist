@@ -51,4 +51,4 @@ No references here, so this file installs byte for byte.
 === .codex/agents/demo-reviewer.toml
 name = "demo-reviewer"
 description = "Reviews a change before it ships."
-developer_instructions = "You review changes. Use `doctor` (demo MCP tool) to check the environment."
+developer_instructions = "You review changes. Use mcp__demo__doctor to check the environment."

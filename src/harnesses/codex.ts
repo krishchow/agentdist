@@ -1,5 +1,5 @@
 import { defineHarness, unsupported } from "../harness/define";
-import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
+import { dialect, noToolGrants } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import type { McpServerNode } from "../ir/nodes";
 import { tomlAgents } from "../surfaces/agents";
@@ -29,7 +29,7 @@ export const codex = defineHarness({
   configRoot: { user: home, local: ".codex" },
   detect: configRootExists(home),
   // A subagent file has no tool list; capabilities are narrowed through `features` instead.
-  dialect: dialect({ toolRef: proseToolRef, skillRef: (name) => `$${name}`, ...noToolGrants }),
+  dialect: dialect({ skillRef: (name) => `$${name}`, ...noToolGrants }),
   kinds: {
     skill: sharedSkills(),
     agent: tomlAgents(
@@ -50,5 +50,6 @@ export const codex = defineHarness({
     "https://learn.chatgpt.com/docs/build-skills",
     "https://learn.chatgpt.com/docs/agent-configuration/subagents",
     "https://learn.chatgpt.com/docs/custom-prompts",
+    "https://developers.openai.com/codex/hooks",
   ],
 });

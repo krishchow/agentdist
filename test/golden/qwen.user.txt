@@ -1,5 +1,3 @@
-[warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Qwen Code; it gets the harness's default tools
-
 === ~/.qwen/settings.json (json) → mcpServers . demo
 {
   "command": "npx",
@@ -47,6 +45,7 @@ No references here, so this file installs byte for byte.
 ---
 name: demo-reviewer
 description: Reviews a change before it ships.
+tools: read_file, grep_search, run_shell_command, mcp__demo__doctor
 ---
 
 You review changes. Use mcp__demo__doctor to check the environment.

@@ -105,15 +105,17 @@ describe("harnesses installed together", () => {
     ]);
   });
 
-  it("shares a project .mcp.json between Claude Code and Copilot", () => {
+  it("keeps Copilot's MCP entry out of the .mcp.json Claude Code owns", () => {
     const plan = planInstall(
       demo(),
       HARNESSES.filter((h) => ["claude", "copilot"].includes(h.id)),
       "local",
       env,
     );
-    const shared = plan.configs.filter((c) => c.path.endsWith("/.mcp.json"));
-    expect(shared).toHaveLength(1);
-    expect(shared[0]?.claims.map((c) => c.harness)).toEqual(["claude", "copilot"]);
+    expect(plan.configs.map((c) => displayPath(c.path, "local", env)).sort()).toEqual([
+      ".github/mcp.json",
+      ".mcp.json",
+    ]);
+    expect(plan.diagnostics.filter((d) => d.level === "warn")).toEqual([]);
   });
 });
