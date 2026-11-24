@@ -20,7 +20,15 @@ export const Ledger = z.object({
   engine: z.string(),
   installedAt: z.string(),
   harnesses: z.array(z.string()),
-  files: z.record(z.string(), z.object({ hash: z.string(), harnesses: z.array(z.string()) })),
+  files: z.record(
+    z.string(),
+    z.object({
+      hash: z.string(),
+      harnesses: z.array(z.string()),
+      /** The `kind:name` of the package node the file belongs to. */
+      node: z.string().optional(),
+    }),
+  ),
   configs: z.array(
     z.object({
       path: z.string(),

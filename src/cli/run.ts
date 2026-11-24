@@ -9,7 +9,7 @@ import {
   status,
   uninstall,
 } from "../api";
-import type { ApplyResult } from "../executor/apply";
+import type { Action, ApplyResult } from "../executor/apply";
 import type { Env, HarnessDef } from "../harness/define";
 import { HARNESSES } from "../harnesses/index";
 import { loadPackage, PackageError } from "../ir/load";
@@ -105,11 +105,10 @@ function printResult(result: ApplyResult, write: (text: string) => void, verb: s
     backup: "↳",
   };
   const unchanged = result.actions.filter((a) => a.type === "unchanged").length;
-  for (const action of result.actions) {
-    if (action.type === "unchanged") continue;
-    const detail = action.detail ? `  (${action.detail})` : "";
+  for (const line of summarise(result.actions.filter((a) => a.type !== "unchanged"))) {
+    const detail = line.detail ? `  (${line.detail})` : "";
     write(
-      `  ${symbol[action.type] ?? " "} ${action.type === "backup" ? `backed up to ${action.detail}` : action.target + detail}\n`,
+      `  ${symbol[line.type] ?? " "} ${line.type === "backup" ? `backed up to ${line.detail}` : line.target + detail}\n`,
     );
   }
   if (unchanged > 0) write(`  ${unchanged} already up to date\n`);
@@ -119,6 +118,39 @@ function printResult(result: ApplyResult, write: (text: string) => void, verb: s
   const warnings = result.diagnostics.filter((d) => d.level === "warn");
   for (const d of skipped) write(`  · ${d.harness}: ${d.node ?? ""} ${d.message}\n`);
   for (const d of warnings) write(`  ! ${d.harness}: ${d.message}\n`);
+}
+
+/**
+ * One line per artifact rather than per file: the files of a skill that all had the same thing
+ * happen to them in the same directory are shown as that directory and a count.
+ */
+function summarise(actions: Action[]): Action[] {
+  const lines: Action[] = [];
+  const groups = new Map<string, { first: Action; paths: string[]; index: number }>();
+  for (const action of actions) {
+    if (!action.node || action.detail || action.type === "backup") {
+      lines.push(action);
+      continue;
+    }
+    // A node's files sit under one directory per harness; its name is the last shared segment.
+    const parts = action.target.split("/");
+    const key = `${action.type}\u0000${action.node}\u0000${parts.slice(0, 3).join("/")}`;
+    const group = groups.get(key);
+    if (group) group.paths.push(action.target);
+    else {
+      groups.set(key, { first: action, paths: [action.target], index: lines.length });
+      lines.push(action);
+    }
+  }
+  for (const { first, paths, index } of groups.values()) {
+    if (paths.length < 2) continue;
+    const split = paths.map((path) => path.split("/"));
+    let shared = 0;
+    while (split.every((parts) => parts.length > shared + 1 && parts[shared] === split[0]?.[shared]))
+      shared++;
+    lines[index] = { ...first, target: `${split[0]?.slice(0, shared).join("/")}/  (${paths.length} files)` };
+  }
+  return lines;
 }
 
 function printConflicts(result: ApplyResult, write: (text: string) => void): void {

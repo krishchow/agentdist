@@ -36,6 +36,8 @@ export interface Action {
   /** What was acted on, as a path the user can read. Config keys are `file → key.path`. */
   target: string;
   detail?: string;
+  /** The `kind:name` of the package node a file belongs to, so output can group a skill's files. */
+  node?: string;
 }
 
 /** Something the engine will not overwrite without being told to. */
@@ -190,11 +192,12 @@ export function applyInstall(options: InstallOptions): ApplyResult {
   for (const file of plan.files) {
     const key = toLedgerPath(file.path, root);
     const hash = hashBytes(file.content);
-    nextFiles[key] = { hash, harnesses: [...new Set(file.claims.map((c) => c.harness))] };
+    const node = file.claims[0]?.node;
+    nextFiles[key] = { hash, harnesses: [...new Set(file.claims.map((c) => c.harness))], node };
     const owned = previous?.files[key];
 
     if (!existsSync(file.path) && !isSymlink(file.path)) {
-      actions.push({ type: "create", target: show(file.path) });
+      actions.push({ type: "create", target: show(file.path), node });
       fileWrites.push({ ...file, backup: false });
       continue;
     }
@@ -204,13 +207,14 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     }
     const onDisk = hashBytes(readFileSync(file.path));
     if (onDisk === hash) {
-      actions.push({ type: owned ? "unchanged" : "adopt", target: show(file.path) });
+      actions.push({ type: owned ? "unchanged" : "adopt", target: show(file.path), node });
     } else if (owned) {
       const edited = onDisk !== owned.hash;
       actions.push({
         type: "update",
         target: show(file.path),
         detail: edited ? "your edits were backed up" : undefined,
+        node,
       });
       fileWrites.push({ ...file, backup: edited });
     } else if (options.force) {
@@ -238,6 +242,7 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       type: "remove",
       target: show(path),
       detail: edited ? "your edits were backed up" : undefined,
+      node: entry.node,
     });
     staleFiles.push({ path, backup: edited });
   }
@@ -422,7 +427,7 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       if (!existsSync(path)) continue;
       const edited = hashBytes(readFileSync(path)) !== entry.hash;
       if (edited) actions.push({ type: "backup", target: show(path), detail: show(txn.backup(path)) });
-      actions.push({ type: "remove", target: show(path) });
+      actions.push({ type: "remove", target: show(path), node: entry.node });
       txn.remove(path, root);
     }
 

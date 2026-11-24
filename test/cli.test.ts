@@ -75,7 +75,8 @@ describe("cli", () => {
     );
 
     const removed = await cli(env, "uninstall");
-    expect(removed.out).toContain("- ~/.claude/skills/demo-setup/SKILL.md");
+    expect(removed.out).toContain("- ~/.claude/skills/demo-setup/  (2 files)");
+    expect(removed.out).toContain("- ~/.claude/agents/demo-reviewer.md");
     expect(existsSync(join(env.home, ".claude"))).toBe(false);
     expect((await cli(env, "status")).out).toContain("demo is not installed.");
   });
