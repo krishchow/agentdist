@@ -44,3 +44,10 @@ export const proseToolRef = (server: string, tool: string): string => `\`${tool}
 
 /** For harnesses where a skill is not invoked by a typed command. */
 export const proseSkillRef = (name: string): string => `the \`${name}\` skill`;
+
+/** For harnesses whose subagents take no tool list, or whose tool names are not documented. */
+export const noToolGrants: Pick<Dialect, "tools" | "mcpGrant" | "quietGrants"> = {
+  tools: Object.fromEntries(CANONICAL_TOOLS.map((t) => [t, null])),
+  mcpGrant: () => null,
+  quietGrants: true,
+};

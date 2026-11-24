@@ -47,7 +47,9 @@ export function mapToolGrants(grants: string[], ctx: PlanCtx, what: string): str
       ctx.warn(`${what}: tool grant "${grant}" is not a known tool; passed through unchanged`);
       out.push(grant);
     } else if (mapped === null) {
-      ctx.warn(`${what}: ${ctx.harness.label} has no equivalent of "${grant}"; the grant was dropped`);
+      if (!ctx.harness.dialect.quietGrants) {
+        ctx.warn(`${what}: ${ctx.harness.label} has no equivalent of "${grant}"; the grant was dropped`);
+      }
     } else if (!out.includes(mapped)) {
       out.push(mapped);
     }

@@ -1,0 +1,57 @@
+[info] command:ship skipped: no command directory of its own; ship it as a skill
+
+=== .mcp.json (json) → mcpServers . demo
+{
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "demo-mcp@1.2.3"
+  ],
+  "env": {
+    "DEMO_MODE": "1"
+  }
+}
+
+=== .github/agents/demo-reviewer.agent.md
+---
+name: demo-reviewer
+description: Reviews a change before it ships.
+tools:
+  - read
+  - search
+  - execute
+  - demo/doctor
+---
+
+You review changes. Use demo/doctor to check the environment.
+
+=== .github/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== .github/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call demo/doctor first, then run `node .github/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== .github/skills/demo-ship-it/references/notes.md
+# Notes
+
+See demo/status.
+
+=== .github/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.

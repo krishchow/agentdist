@@ -1,0 +1,47 @@
+[info] agent:reviewer skipped: Cline does not document a subagent file format
+
+=== ~/.cline/data/settings/cline_mcp_settings.json (json) → mcpServers . demo
+{
+  "command": "npx",
+  "args": [
+    "-y",
+    "demo-mcp@1.2.3"
+  ],
+  "env": {
+    "DEMO_MODE": "1"
+  }
+}
+
+=== ~/.cline/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== ~/.cline/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call `doctor` (demo MCP tool) first, then run `node ~/.cline/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== ~/.cline/skills/demo-ship-it/references/notes.md
+# Notes
+
+See `status` (demo MCP tool).
+
+=== ~/.cline/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.
+
+=== ~/.cline/workflows/demo-ship.md
+
+Ship $ARGUMENTS using /demo-ship-it.

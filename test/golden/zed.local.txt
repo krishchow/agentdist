@@ -1,0 +1,33 @@
+[info] agent:reviewer skipped: Zed has no subagent definition files
+[info] command:ship skipped: Zed has no command files; a skill is its slash command
+[info] mcpServer:demo skipped: no local-scope MCP configuration
+
+=== .agents/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== .agents/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call mcp:demo:doctor first, then run `node .agents/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== .agents/skills/demo-ship-it/references/notes.md
+# Notes
+
+See mcp:demo:status.
+
+=== .agents/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { parseArgs, UsageError } from "../src/cli/args";
 import { runCli } from "../src/cli/run";
 import type { Env } from "../src/harness/define";
+import { claude } from "../src/harnesses/claude";
 import { FIXTURE, read, sandbox } from "./helpers";
 
 async function cli(env: Env, ...argv: string[]) {
@@ -14,6 +15,7 @@ async function cli(env: Env, ...argv: string[]) {
     argv,
     bin: "npx demo",
     env,
+    harnesses: [claude],
     interactive: false,
     stdout: (t) => {
       out += t;

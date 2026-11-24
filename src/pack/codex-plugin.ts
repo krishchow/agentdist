@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { dialect, proseToolRef } from "../harness/dialect";
-import type { Package } from "../ir/nodes";
-import { compactEntry } from "../surfaces/mcp";
+import { codexMcpEntry } from "../harnesses/codex";
 import { pluginContent } from "./content";
 import { json, type PackTarget } from "./types";
 
@@ -26,18 +25,6 @@ const Options = z.strictObject({
     .default(true),
   contentDir: z.string().default("plugins/codex"),
 });
-
-/** Codex's own field names: snake case, and an explicit list of variables the server may inherit. */
-export function codexMcpEntry(server: Extract<Package["nodes"][number], { kind: "mcpServer" }>) {
-  return compactEntry({
-    command: server.command,
-    args: server.args,
-    env: server.env,
-    env_vars: server.envPassthrough.length ? server.envPassthrough : undefined,
-    startup_timeout_sec: server.startupTimeoutSec,
-    tool_timeout_sec: server.toolTimeoutSec,
-  });
-}
 
 /**
  * A Codex plugin: `.codex-plugin/plugin.json`, its MCP server file, and a repository marketplace.

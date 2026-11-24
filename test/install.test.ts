@@ -43,7 +43,13 @@ describe("install into Claude Code", () => {
 
     expect(JSON.parse(read(env.home, ".claude.json"))).toEqual({
       mcpServers: {
-        demo: { type: "stdio", command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } },
+        demo: {
+          type: "stdio",
+          command: "npx",
+          args: ["-y", "demo-mcp@1.2.3"],
+          env: { DEMO_MODE: "1" },
+          timeout: 300000,
+        },
       },
     });
     expect(status("demo", env).user?.harnesses).toEqual(["claude"]);
@@ -130,7 +136,13 @@ describe("ownership", () => {
 
   it("adopts an identical entry that is already there", () => {
     const env = sandbox();
-    const entry = { type: "stdio", command: "npx", args: ["-y", "demo-mcp@1.2.3"], env: { DEMO_MODE: "1" } };
+    const entry = {
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "demo-mcp@1.2.3"],
+      env: { DEMO_MODE: "1" },
+      timeout: 300000,
+    };
     writeFileSync(join(env.home, ".claude.json"), JSON.stringify({ mcpServers: { demo: entry } }));
     const result = install({ pkg: demo(), harnesses: [claude], scope: "user", env });
     expect(result.actions.find((a) => a.target.includes("mcpServers.demo"))?.type).toBe("adopt");

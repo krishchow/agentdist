@@ -1,0 +1,52 @@
+[warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Devin (Windsurf); it gets the harness's default tools
+[info] command:ship skipped: no user-scope command directory
+
+=== ~/.config/devin/mcp_config.json (json) → mcpServers . demo
+{
+  "command": "npx",
+  "args": [
+    "-y",
+    "demo-mcp@1.2.3"
+  ],
+  "env": {
+    "DEMO_MODE": "1"
+  }
+}
+
+=== ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== ~/.agents/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call `doctor` (demo MCP tool) first, then run `node ~/.agents/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== ~/.agents/skills/demo-ship-it/references/notes.md
+# Notes
+
+See `status` (demo MCP tool).
+
+=== ~/.agents/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.
+
+=== ~/.config/devin/agents/demo-reviewer/AGENT.md
+---
+name: demo-reviewer
+description: Reviews a change before it ships.
+---
+
+You review changes. Use `doctor` (demo MCP tool) to check the environment.

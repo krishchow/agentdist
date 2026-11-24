@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, sep } from "node:path";
-import type { Env, HarnessDef, PlanCtx } from "../harness/define";
+import type { Env, HarnessDef, PlanCtx, Skip } from "../harness/define";
 import { installedName, type Node, nodeId, type Package } from "../ir/nodes";
 import { type Ref, replaceRefs } from "../ir/refs";
 import type { Scope } from "../schema/manifest";
@@ -7,6 +7,8 @@ import {
   type Claim,
   configKey,
   type Diagnostic,
+  type FileOp,
+  type Op,
   type Plan,
   type PlannedConfig,
   type PlannedFile,
@@ -84,7 +86,10 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   const files = new Map<string, PlannedFile>();
   const configs = new Map<string, PlannedConfig>();
   const diagnostics: Diagnostic[] = [];
+  const show = (abs: string) => displayPath(abs, scope, env);
+  const label = (id: string | undefined) => harnesses.find((h) => h.id === id)?.label ?? id;
 
+  const proposed: Array<{ op: Op; claim: Claim; harness: HarnessDef }> = [];
   for (const harness of harnesses) {
     let current: Node | undefined;
     const note = (level: Diagnostic["level"], message: string) =>
@@ -93,46 +98,65 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
 
     for (const node of pkg.nodes) {
       current = node;
-      const handler = harness.kinds[node.kind] as {
-        plan(n: Node, c: PlanCtx): ReturnType<HarnessDef["kinds"]["skill"]["plan"]>;
-      };
+      const handler = harness.kinds[node.kind] as { plan(n: Node, c: PlanCtx): Op[] | Skip };
       const result = handler.plan(node, ctx);
       if (!Array.isArray(result)) {
         note("info", `skipped: ${result.skip}`);
         continue;
       }
       const claim: Claim = { harness: harness.id, node: nodeId(node) };
-      for (const op of result) {
-        if (op.type === "file") {
-          const existing = files.get(op.path);
-          if (!existing) files.set(op.path, { ...op, claims: [claim] });
-          else {
-            if (!sameContent(existing.content, op.content)) {
-              const first = existing.claims[0]?.harness;
-              note(
-                "warn",
-                `${displayPath(op.path, scope, env)} is shared with ${first} but renders differently for ${harness.label}; the ${first} rendering is installed`,
-              );
-            }
-            existing.claims.push(claim);
-          }
-        } else {
-          const key = configKey(op);
-          const existing = configs.get(key);
-          if (!existing) configs.set(key, { ...op, claims: [claim] });
-          else {
-            if (JSON.stringify(existing.value) !== JSON.stringify(op.value)) {
-              const first = existing.claims[0]?.harness;
-              note(
-                "warn",
-                `${displayPath(op.path, scope, env)} → ${op.keyPath.join(".")} is shared with ${first} but differs for ${harness.label}; the ${first} entry is installed`,
-              );
-            }
-            existing.claims.push(claim);
-          }
-        }
-      }
+      for (const op of result) proposed.push({ op, claim, harness });
     }
+  }
+
+  const claimFile = (path: string, op: FileOp, claim: Claim, harness: HarnessDef) => {
+    const existing = files.get(path);
+    if (!existing) {
+      const { satisfiedBy: _, ...file } = op;
+      files.set(path, { ...file, path, claims: [claim] });
+      return;
+    }
+    if (!sameContent(existing.content, op.content)) {
+      const first = label(existing.claims[0]?.harness);
+      diagnostics.push({
+        level: "warn",
+        harness: harness.id,
+        node: claim.node,
+        message: `${show(path)} is shared with ${first} but renders differently for ${harness.label}; the ${first} rendering is installed`,
+      });
+    }
+    existing.claims.push(claim);
+  };
+
+  // Files a harness writes unconditionally come first, so that a harness able to read the same
+  // artifact from somewhere else can see what will already be there.
+  for (const { op, claim, harness } of proposed) {
+    if (op.type === "file" && !op.satisfiedBy?.length) claimFile(op.path, op, claim, harness);
+  }
+  for (const { op, claim, harness } of proposed) {
+    if (op.type !== "file" || !op.satisfiedBy?.length) continue;
+    const elsewhere = files.has(op.path) ? undefined : op.satisfiedBy.find((path) => files.has(path));
+    claimFile(elsewhere ?? op.path, op, claim, harness);
+  }
+
+  for (const { op, claim, harness } of proposed) {
+    if (op.type !== "config") continue;
+    const key = configKey(op);
+    const existing = configs.get(key);
+    if (!existing) {
+      configs.set(key, { ...op, claims: [claim] });
+      continue;
+    }
+    if (JSON.stringify(existing.value) !== JSON.stringify(op.value)) {
+      const first = label(existing.claims[0]?.harness);
+      diagnostics.push({
+        level: "warn",
+        harness: harness.id,
+        node: claim.node,
+        message: `${show(op.path)} → ${op.keyPath.join(".")} is shared with ${first} but differs for ${harness.label}; the ${first} entry is installed`,
+      });
+    }
+    existing.claims.push(claim);
   }
 
   return { files: [...files.values()], configs: [...configs.values()], diagnostics };

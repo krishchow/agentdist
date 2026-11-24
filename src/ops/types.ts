@@ -15,6 +15,12 @@ export interface FileOp {
   path: string;
   content: string | Uint8Array;
   executable?: boolean;
+  /**
+   * Other paths the harness would read this same artifact from. If another harness in the plan
+   * already writes one of them, this op is dropped and that file is claimed instead, so the
+   * harness does not end up listing the artifact twice.
+   */
+  satisfiedBy?: string[];
 }
 
 /** One key the package owns inside a config file that belongs to the user. */

@@ -32,7 +32,7 @@ export const claude = defineHarness({
       },
       format: "json",
       keyPath: ["mcpServers"],
-      entry: stdioEntry({ type: "stdio" }),
+      entry: stdioEntry({ type: "stdio" }, { toolTimeout: { field: "timeout", unit: "ms" } }),
     }),
   },
   sources: [

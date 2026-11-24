@@ -9,6 +9,8 @@ import { mapToolGrants } from "../transforms/tools";
 export interface MarkdownAgentsOptions {
   /** File extension including the dot. Copilot uses `.agent.md`. */
   ext?: string;
+  /** A harness that wants `<dir>/<name>/<file>` instead of `<dir>/<name>.md` names the file here. */
+  folderFile?: string;
   /** How the tool list is written: Claude Code takes `A, B`, most others a YAML list. */
   tools?: "csv" | "list";
   /**
@@ -21,7 +23,15 @@ export interface MarkdownAgentsOptions {
 }
 
 function grants(node: AgentNode, ctx: PlanCtx): string[] | undefined {
-  return node.tools ? mapToolGrants(node.tools, ctx, `agent ${node.name}`) : undefined;
+  if (!node.tools) return undefined;
+  const mapped = mapToolGrants(node.tools, ctx, `agent ${node.name}`);
+  if (mapped.length > 0 || node.tools.length === 0) return mapped;
+  // An empty list would mean "no tools", so the field is left out and the user is told that the
+  // restriction did not survive.
+  ctx.warn(
+    `agent ${node.name}: its tool restrictions could not be expressed for ${ctx.harness.label}; it gets the harness's default tools`,
+  );
+  return undefined;
 }
 
 /**
@@ -51,7 +61,9 @@ export function markdownAgents(dir: ScopedLoc, options: MarkdownAgentsOptions = 
       return [
         {
           type: "file",
-          path: join(base(ctx), `${name}${options.ext ?? ".md"}`),
+          path: options.folderFile
+            ? join(base(ctx), name, options.folderFile)
+            : join(base(ctx), `${name}${options.ext ?? ".md"}`),
           content: renderDoc(convert(node.doc)),
         },
       ];

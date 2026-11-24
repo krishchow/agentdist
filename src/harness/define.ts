@@ -41,6 +41,11 @@ export interface Dialect {
   tools: Record<string, string | null>;
   /** An MCP grant in a tool list. `tool` is `*` for the whole server. */
   mcpGrant(server: string, tool: string): string | null;
+  /**
+   * The harness has no per-subagent tool list at all, so dropped grants are reported once per
+   * subagent instead of once per grant.
+   */
+  quietGrants?: boolean;
 }
 
 export interface PlanCtx extends LocCtx {

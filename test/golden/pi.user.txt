@@ -1,0 +1,51 @@
+[info] agent:reviewer skipped: pi has no subagent definitions
+
+=== ~/.pi/agent/mcp.json (json) → mcpServers . demo
+{
+  "command": "npx",
+  "args": [
+    "-y",
+    "demo-mcp@1.2.3"
+  ],
+  "env": {
+    "DEMO_MODE": "1"
+  },
+  "timeout": 300
+}
+
+=== ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== ~/.agents/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call mcp__demo__doctor first, then run `node ~/.agents/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /skill:demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== ~/.agents/skills/demo-ship-it/references/notes.md
+# Notes
+
+See mcp__demo__status.
+
+=== ~/.agents/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.
+
+=== ~/.pi/agent/prompts/demo-ship.md
+---
+description: Ship the current change
+---
+
+Ship $ARGUMENTS using /skill:demo-ship-it.

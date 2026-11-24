@@ -1,0 +1,62 @@
+=== ~/.claude.json (json) → mcpServers . demo
+{
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "demo-mcp@1.2.3"
+  ],
+  "env": {
+    "DEMO_MODE": "1"
+  },
+  "timeout": 300000
+}
+
+=== ~/.claude/agents/demo-reviewer.md
+---
+name: demo-reviewer
+description: Reviews a change before it ships.
+tools: Read, Grep, Bash, mcp__demo__doctor
+model: sonnet
+color: blue
+---
+
+You review changes. Use mcp__demo__doctor to check the environment.
+
+=== ~/.claude/commands/demo-ship.md
+---
+description: Ship the current change
+argument-hint: "[target]"
+---
+
+Ship $ARGUMENTS using /demo-ship-it.
+
+=== ~/.claude/skills/demo-setup/scripts/run.mjs (executable)
+<76 bytes, copied as is>
+
+=== ~/.claude/skills/demo-setup/SKILL.md
+---
+name: demo-setup
+description: Set the demo up. Use on first run.
+---
+
+# Setup
+
+Call mcp__demo__doctor first, then run `node ~/.claude/skills/demo-setup/scripts/run.mjs check`.
+When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
+This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
+
+=== ~/.claude/skills/demo-ship-it/references/notes.md
+# Notes
+
+See mcp__demo__status.
+
+=== ~/.claude/skills/demo-ship-it/SKILL.md
+---
+name: demo-ship-it
+description: Ship the thing.
+---
+
+# Ship it
+
+No references here, so this file installs byte for byte.
