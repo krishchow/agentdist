@@ -1,0 +1,50 @@
+{
+  "name": "agentpkg",
+  "version": "0.1.0",
+  "description": "Install engine for agent packages: write skills, subagents, commands and MCP servers once, install them into any AI coding harness at project or user scope.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "agentpkg": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema.json": "./schema/agentpkg.schema.json"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup && node scripts/gen-schema.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.9.0",
+    "jsonc-parser": "^3.3.1",
+    "smol-toml": "^1.9.1",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}
