@@ -23,8 +23,13 @@ Installed notarize 1.5.0 for claude, codex at user scope:
   + ~/.codex/config.toml → mcp_servers.notarize
 ```
 
-The package in that example contains no installer code. It has an `agentdist.json`, a `skills/`
-directory, and a few lines that hand its `install` subcommand to this engine.
+The package in that example, [notarize](https://github.com/krishchow/notarize), contains no
+installer code. It has an [`agentdist.json`](https://github.com/krishchow/notarize/pull/29), a
+`skills/` directory, and a few lines that hand its `install` subcommand to this engine.
+
+```bash
+npm install --save-dev agentdist
+```
 
 ## What a package looks like
 
@@ -62,12 +67,20 @@ The full contract, which is the seam between a package and the engine, is in
 ## Using it from a package
 
 ```ts
+import { fileURLToPath } from "node:url";
 import { runCli } from "agentdist";
+
+// The directory that holds agentdist.json, here one level above this file.
+const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 
 if (["install", "uninstall", "status", "harnesses"].includes(process.argv[2])) {
   process.exit(await runCli({ packageRoot, argv: process.argv.slice(2), bin: "npx my-package" }));
 }
 ```
+
+Ship `agentdist.json` and the content directories in the published package, since the installer
+reads them from wherever the package was installed. The engine can be a regular dependency, or
+bundled into your own binary as notarize does.
 
 Or run a package from a directory with the standalone binary:
 
@@ -123,11 +136,40 @@ produces. See [docs/architecture.md](docs/architecture.md).
 
 ## Status
 
-Version 0.1, not yet published to npm. Paths and config shapes were checked against each harness's
-documentation in November 2026 (notes in [docs/research](docs/research)); they have been exercised
-end to end against sandboxed home directories, not against every harness's real application.
-Not built yet: installing a package by npm name from the standalone binary, hooks in the Codex
-plugin output, and Windows testing.
+Version 0.1. Paths and config shapes were checked against each harness's documentation in November
+2026 (notes in [docs/research](docs/research)). They have been exercised end to end against
+sandboxed home directories, and Codex and OpenCode were confirmed to load what the engine writes;
+the other harnesses have not been tested against their real applications. Reports of a path or
+shape that is wrong are very welcome.
+
+Not built yet: installing a package by npm name from the standalone binary,
+[hooks in the Codex plugin output](https://github.com/krishchow/agentdist/issues/1), and
+[Windows support](https://github.com/krishchow/agentdist/issues/2).
+
+## Lineage
+
+The idea comes from [GSD Core](https://github.com/open-gsd/gsd-core), whose
+`npx @opengsd/gsd-core` installer asks which runtimes to install into and whether to install
+globally or locally, then writes the right files for each. Two things it does well are kept here:
+describing each harness as data rather than as branches in the installer, and making the
+repository-or-user choice part of every install.
+
+agentdist is a complete rewrite and shares no code with it. GSD's installer exists to install GSD;
+this is an engine with no application in it, so that any package of skills, subagents, commands,
+hooks and MCP servers can be installed the same way. It also adds what a general engine needs and
+one application's installer does not: a declared package contract, MCP servers and hooks as
+first-class kinds, an ownership ledger, and generation of native plugin formats.
+
+[notarize](https://github.com/krishchow/notarize), an MCP server and skills for Apple code signing
+and notarization, is the first package built on it and the best worked example: see its
+`agentdist.json` and the few lines in `src/index.ts` that call `runCli`.
+
+## Related
+
+[agent-install](https://github.com/millionco/agent-install) solves a neighbouring problem with a
+different shape: an imperative API for installing skills and MCP entries, with wider harness
+coverage for those two. agentdist is declarative (one manifest), covers subagents, commands and
+hooks as well, and tracks what it wrote so that uninstall and updates never touch anything else.
 
 ## Development
 
