@@ -63,7 +63,7 @@ Handlers are not written per harness. They come from **surfaces**:
 | `markdownCommands(dir, opts)` / `tomlCommands` | directory, arguments placeholder | slash commands |
 | `mcpConfig({file, format, keyPath, entry})` | file per scope, format, key path, entry shape | MCP registration |
 
-So Factory's subagents are `markdownAgents` pointed at `droids/` instead of `agents/`, and eleven
+So Factory's subagents are `markdownAgents` pointed at `droids/` instead of `agents/`, and twelve
 harnesses share the single `sharedSkills()` handler. See [adding a harness](adding-a-harness.md).
 
 A **dialect** is how a harness spells what content refers to symbolically: an MCP tool's name, a

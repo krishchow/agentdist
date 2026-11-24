@@ -7,29 +7,36 @@
     },
     "engine": {
       "type": "string",
-      "const": "v1"
+      "const": "v1",
+      "description": "Contract version. A floating major: every v1 engine accepts every v1 manifest."
     },
     "name": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "Package identity and ownership namespace. Vendored artifacts are prefixed with it."
     },
     "version": {
+      "description": "Defaults to the version of the package.json beside the manifest.",
       "type": "string"
     },
     "description": {
       "type": "string"
     },
     "skills": {
+      "description": "Directory of <name>/SKILL.md folders, relative to the manifest.",
       "type": "string"
     },
     "agents": {
+      "description": "Directory of <name>.md subagent definitions, relative to the manifest.",
       "type": "string"
     },
     "commands": {
+      "description": "Directory of <name>.md slash commands, relative to the manifest.",
       "type": "string"
     },
     "mcpServers": {
       "default": {},
+      "description": "MCP servers to register with each harness, keyed by server name.",
       "type": "object",
       "propertyNames": {
         "type": "string",
@@ -45,10 +52,12 @@
           },
           "command": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "The executable to run. {{version}} and {{name}} are filled in."
           },
           "args": {
             "default": [],
+            "description": "Arguments. {{version}} and {{name}} are filled in, e.g. \"my-server@{{version}}\".",
             "type": "array",
             "items": {
               "type": "string"
@@ -56,6 +65,7 @@
           },
           "env": {
             "default": {},
+            "description": "Literal environment values the package sets. Never put a secret here.",
             "type": "object",
             "propertyNames": {
               "type": "string"
@@ -66,6 +76,7 @@
           },
           "envPassthrough": {
             "default": [],
+            "description": "Names of variables the server reads from the user's own environment. Harnesses that do not hand a server the whole environment are told to let these through; an unset one may arrive as an empty string.",
             "type": "array",
             "items": {
               "type": "string",
@@ -73,11 +84,13 @@
             }
           },
           "startupTimeoutSec": {
+            "description": "How long a harness should wait for the server to start, where it lets a package say.",
             "type": "integer",
             "exclusiveMinimum": 0,
             "maximum": 9007199254740991
           },
           "toolTimeoutSec": {
+            "description": "How long a harness should wait for one tool call, where it lets a package say.",
             "type": "integer",
             "exclusiveMinimum": 0,
             "maximum": 9007199254740991
@@ -91,6 +104,7 @@
     },
     "namespace": {
       "default": "prefix",
+      "description": "How vendored artifact names avoid colliding with the user's own. \"prefix\" installs skill \"setup\" of package \"notarize\" as \"notarize-setup\".",
       "type": "string",
       "enum": [
         "prefix",
@@ -98,6 +112,7 @@
       ]
     },
     "onboardingSkill": {
+      "description": "A skill to offer straight after installing. Must name a skill the package has.",
       "type": "string"
     },
     "scopes": {
@@ -105,6 +120,7 @@
         "local",
         "user"
       ],
+      "description": "Where the package may be installed: \"local\" (one repository), \"user\" (every project). Default both.",
       "minItems": 1,
       "type": "array",
       "items": {
@@ -116,12 +132,14 @@
       }
     },
     "harnesses": {
+      "description": "Restrict the package to these harness ids. Omit to allow every harness the engine knows.",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "listing": {
+      "description": "Marketplace metadata, read only by `agentpkg pack`.",
       "type": "object",
       "properties": {
         "displayName": {
@@ -186,6 +204,7 @@
     },
     "pack": {
       "default": {},
+      "description": "Native plugin formats to generate with `agentpkg pack`, keyed by target id (claude-plugin, codex-plugin, agent-plugin, dsh-bundle), each with its own options.",
       "type": "object",
       "propertyNames": {
         "type": "string"

@@ -230,7 +230,10 @@ const toml: ConfigEditor = {
       );
     }
     // The table was appended after a blank line; take that back out with it.
-    const tidy = next.replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "").trimEnd();
+    const tidy = next
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/^\n+/, "")
+      .trimEnd();
     return tidy ? `${tidy}\n` : "";
   },
   isHollow: (text) => hollow(parseTomlText(text)),
