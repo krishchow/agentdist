@@ -40,7 +40,7 @@ export function runAuthorCommand(
     }
     if (Object.keys(pkg.manifest.pack).length === 0) {
       throw new UsageError(
-        `${pkg.name} declares no pack targets. Add a "pack" object to agentpkg.json; known targets: ${targets.map((t) => t.id).join(", ")}`,
+        `${pkg.name} declares no pack targets. Add a "pack" object to agentdist.json; known targets: ${targets.map((t) => t.id).join(", ")}`,
       );
     }
     const result = runPack(pkg, targets, { check: args.check });
@@ -50,7 +50,7 @@ export function runAuthorCommand(
     }
     if (args.check) {
       if (result.clean) io.out("Generated plugin files are up to date.\n");
-      else io.err("Generated plugin files are out of date. Run `agentpkg pack` and commit the result.\n");
+      else io.err("Generated plugin files are out of date. Run `agentdist pack` and commit the result.\n");
       return result.clean ? 0 : 1;
     }
     io.out(

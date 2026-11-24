@@ -1,11 +1,27 @@
 {
-  "name": "agentpkg",
+  "name": "agentdist",
   "version": "0.1.0",
   "description": "Install engine for agent packages: write skills, subagents, commands and MCP servers once, install them into any AI coding harness at project or user scope.",
-  "type": "module",
+  "keywords": [
+    "agent-skills",
+    "mcp",
+    "claude-code",
+    "codex",
+    "cursor",
+    "copilot",
+    "gemini-cli",
+    "opencode",
+    "installer",
+    "skills",
+    "hooks",
+    "subagents",
+    "ai-agents"
+  ],
+  "author": "Krish Chowdhary",
   "license": "MIT",
+  "type": "module",
   "bin": {
-    "agentpkg": "dist/cli.js"
+    "agentdist": "dist/cli.js"
   },
   "main": "dist/index.js",
   "types": "dist/types/src/index.d.ts",
@@ -14,15 +30,21 @@
       "types": "./dist/types/src/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema.json": "./schema/agentpkg.schema.json"
+    "./schema.json": "./schema/agentdist.schema.json"
   },
   "files": [
     "dist",
     "schema",
-    "README.md"
+    "docs",
+    "!docs/research",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup && tsc -p tsconfig.build.json && node scripts/gen-schema.mjs && node scripts/gen-harness-table.mjs",
@@ -31,7 +53,8 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test"
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test",
+    "prepublishOnly": "pnpm run check"
   },
   "dependencies": {
     "@clack/prompts": "^1.9.0",

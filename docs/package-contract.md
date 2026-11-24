@@ -1,19 +1,20 @@
 # The package contract
 
 This is the seam between a package and the engine: the shape a package must have, and what the
-engine promises in return. The manifest half of it is the Zod type `AgentPkg` in
+engine promises in return. The manifest half of it is the Zod type `AgentDist` in
 [`src/schema/manifest.ts`](../src/schema/manifest.ts), published as JSON Schema at
-`agentpkg/schema.json`.
+`agentdist/schema.json`.
 
 A package is **content in one canonical dialect plus one manifest**. It contains no installer code,
 and it never mentions a harness.
 
 ```
 my-package/
-  agentpkg.json                  the only file the engine reads for intent
+  agentdist.json                  the only file the engine reads for intent
   skills/<name>/SKILL.md         plus any supporting files beside it
   agents/<name>.md               optional
   commands/<name>.md             optional
+  hooks/…                        optional: files the hook commands run
 ```
 
 ## The four rules
@@ -23,19 +24,19 @@ my-package/
    Claude Code's built-in tool names.
 2. **Anything a harness spells its own way is a symbolic reference, never a literal.** See
    [References](#references).
-3. **Everything that touches a user's config is declared, not performed.** MCP servers are entries
-   in the manifest. The engine owns every write, the record of what it wrote, and the undo.
+3. **Everything that touches a user's config is declared, not performed.** MCP servers and hooks
+   are entries in the manifest. The engine owns every write, the record of what it wrote, and the undo.
 4. **Scope is invisible to the package.** A package cannot ask where it was installed. The one
    thing it may need, the directory a skill landed in, is the reference `{{skill_dir}}`.
 
 If a package ever needs `if (harness === …)`, the seam has leaked and the engine is what should
 change.
 
-## `agentpkg.json`
+## `agentdist.json`
 
 ```jsonc
 {
-  "$schema": "https://unpkg.com/agentpkg/schema/agentpkg.schema.json",
+  "$schema": "https://unpkg.com/agentdist/schema/agentdist.schema.json",
   "engine": "v1",                 // contract version; a floating major
   "name": "notarize",             // identity and ownership namespace
   "version": "1.5.0",             // optional: defaults to the package.json beside it
@@ -55,6 +56,19 @@ change.
     }
   },
 
+  "hooks": {
+    "guard": {
+      "event": "PreToolUse",
+      "matcher": ["Bash", "Edit"],
+      "command": "node {{hooks_dir}}/guard.mjs",
+      "timeoutSec": 10
+    }
+  },
+  "hooksDir": "./hooks",
+  "environment": {
+    "ACME_TOKEN": { "description": "API token for the hosted server.", "required": true }
+  },
+
   "namespace": "prefix",          // "prefix" (default) or "none"
   "onboardingSkill": "setup",
   "scopes": ["local", "user"],    // restrict where it may be installed; default both
@@ -72,7 +86,9 @@ filled into an MCP server's `command` and `args`.
 |---|---|---|
 | `engine`, `name`, `version` | everything | `name` is lowercase letters, digits and hyphens |
 | `skills`, `agents`, `commands` | install, pack | directories inside the package |
-| `mcpServers` | install, pack | stdio servers; `env` values are literal, `envPassthrough` is names only |
+| `mcpServers` | install, pack | stdio or HTTP servers; see [MCP servers](#mcp-servers) |
+| `hooks`, `hooksDir` | install, pack | lifecycle hooks and the files they run; see [Hooks](#hooks) |
+| `environment` | install, status | what each variable is for and whether it is required; values are never read or stored |
 | `namespace` | install | how vendored names avoid collisions (below) |
 | `onboardingSkill` | install hint, pack | must name a skill the package has |
 | `scopes`, `harnesses` | install | restrictions only; they never change what is written |
@@ -92,6 +108,66 @@ or `mcp:<server>` for the package's own MCP servers. Each harness maps them to i
 grant a harness cannot express is dropped with a warning.
 
 Symlinks inside a package are not followed, so a package cannot install bytes from outside itself.
+
+## MCP servers
+
+A server is one of two shapes.
+
+```jsonc
+"local":  { "command": "npx", "args": ["-y", "acme-mcp@{{version}}"],
+            "env": { "MODE": "1" }, "envPassthrough": ["ACME_TOKEN"] },
+"hosted": { "transport": "http", "url": "https://mcp.acme.dev/mcp",
+            "headers": { "Authorization": "Bearer {{env:ACME_TOKEN}}" } }
+```
+
+**Credentials never go in the manifest, and the engine never writes one.** There are two ways a
+remote server gets authenticated:
+
+- **OAuth.** Declare only the `url`. Every harness the engine supports runs the login itself and
+  keeps the token.
+- **A token in an environment variable.** Reference it in a header value as `{{env:NAME}}`. Each
+  harness is given a reference in its own syntax (`${NAME}`, `${env:NAME}`, `{env:NAME}`, Codex's
+  `bearer_token_env_var`) and resolves it when it connects. A harness whose header values are
+  literal does not get the server, and the install says why.
+
+For a stdio server, `envPassthrough` does the same job: harnesses that start a server with the
+user's whole environment need nothing, and the ones that do not are told which variables to let
+through.
+
+### What can be known about the environment
+
+The engine can see one thing: whether a variable is set in the shell the installer runs in. It
+cannot see what a harness will have when it starts, because an application launched from a desktop
+does not inherit what a shell profile exports. So it does what is checkable and is plain about the
+rest:
+
+- `environment` documents each variable. `install` warns about a needed one that is not set, and
+  `status` lists them all with their state.
+- Needed means declared `required`, or referenced by a remote server's header.
+- An unset variable may reach a server as an empty string, so a server should treat empty as
+  unset.
+- A check that has to be right belongs at run time, inside the harness: in the server itself, or
+  in an onboarding skill that runs a script and reports what is missing.
+
+## Hooks
+
+A hook is a command the harness runs at a point in its lifecycle. The events are Claude Code's:
+`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop`,
+`SubagentStop`, `PreCompact`, `Notification`. Each harness maps them to its own names and skips,
+with the reason, the ones it lacks.
+
+- `matcher` lists canonical tool names for the two tool events. They are translated per harness
+  (`Bash` is `Shell` in Cursor, `run_shell_command` in Gemini CLI, `Execute` in Factory). A hook
+  whose tools a harness has none of is skipped rather than widened to every tool.
+- `{{hooks_dir}}` in a command is where `hooksDir` was installed. The files are written once per
+  scope, under the engine's own `.agentdist/<package>/hooks`, and shared by every harness.
+- **The script contract is Claude Code's:** the event as JSON on stdin, exit code 2 to block. The
+  harnesses that take hooks honour that much, but the payload differs between them, notably the
+  tool's name. A script that inspects its input must accept each harness's names.
+- OpenCode, Kilo Code, Amp and pi take hooks only as code plugins, Cline only as one script per
+  event, and Zed not at all. They are reported as unsupported.
+- A harness that also runs Claude Code's hooks (Cursor, Devin) is not given a second registration
+  when Claude Code is installed alongside it, so a hook does not fire twice.
 
 ## References
 
@@ -122,16 +198,18 @@ Native plugins are namespaced by the harness itself, so `pack` never prefixes.
 ## What the engine promises
 
 - **It only deletes what it wrote.** Every file and config key is recorded in a ledger
-  (`.agentpkg/<name>.json` in the repository, or in your home directory). A name or a prefix is
+  (`.agentdist/<name>.json` in the repository, or in your home directory). A name or a prefix is
   never treated as proof of ownership.
 - **It will not overwrite what it did not write.** An existing file or config entry that is not in
   the ledger is a conflict, reported before anything changes. `--force` replaces it after backing
   it up.
 - **Your edits are backed up.** A file you changed since the last install is copied to
-  `.agentpkg/backup/` before it is updated or removed. A config entry you changed is left in place
+  `.agentdist/backup/` before it is updated or removed. A config entry you changed is left in place
   on uninstall.
-- **Config files stay yours.** The engine changes one key and leaves every other byte, comment and
-  formatting choice alone. A file it cannot parse is never touched.
+- **Config files stay yours.** The engine changes one key, or one element of a list, and leaves
+  every other byte, comment and formatting choice alone. A file it cannot parse is never touched.
+- **What was already there stays.** An entry that was present and identical before the install is
+  recorded as adopted, and uninstall leaves it.
 - **An install is all or nothing.** Conflicts are found before the first write, and a failure part
   way through restores every file it touched.
 - **Unsupported is reported, not silent.** If a harness cannot take a kind of artifact, the install

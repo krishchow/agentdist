@@ -3,7 +3,7 @@
 [info] mcpServer:demo skipped: no local-scope MCP configuration
 [info] mcpServer:demo-remote skipped: no local-scope MCP configuration
 
-=== .agentpkg/demo/hooks/guard.mjs (executable)
+=== .agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === .agents/plugins/demo-greet/hooks/hooks.json
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .agentpkg/demo/hooks/guard.mjs",
+            "command": "node .agentdist/demo/hooks/guard.mjs",
             "timeout": 10
           }
         ]

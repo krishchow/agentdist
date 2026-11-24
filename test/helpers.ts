@@ -9,7 +9,7 @@ export const demo = () => loadPackage(FIXTURE);
 
 /** A throwaway home and repository, so no test can reach the real ones. */
 export function sandbox(vars: Record<string, string> = {}): Env {
-  const root = realpathSync(mkdtempSync(join(tmpdir(), "agentpkg-")));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "agentdist-")));
   const home = join(root, "home");
   const projectRoot = join(root, "repo");
   mkdirSync(home, { recursive: true });

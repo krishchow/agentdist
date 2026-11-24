@@ -35,7 +35,7 @@
   "hooks": [
     {
       "type": "command",
-      "command": "node \"$(git rev-parse --show-toplevel)/.agentpkg/demo/hooks\"/guard.mjs",
+      "command": "node \"$(git rev-parse --show-toplevel)/.agentdist/demo/hooks\"/guard.mjs",
       "timeout": 10
     }
   ]
@@ -51,7 +51,7 @@
   ]
 }
 
-=== .agentpkg/demo/hooks/guard.mjs (executable)
+=== .agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)

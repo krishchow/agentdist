@@ -7,7 +7,7 @@ import { installedName } from "../src/ir/nodes";
 import { demo, FIXTURE } from "./helpers";
 
 const copy = () => {
-  const dir = mkdtempSync(join(tmpdir(), "agentpkg-pkg-"));
+  const dir = mkdtempSync(join(tmpdir(), "agentdist-pkg-"));
   cpSync(FIXTURE, dir, { recursive: true });
   return dir;
 };
@@ -86,17 +86,17 @@ describe("loadPackage", () => {
 
   it("checks hooks and remote servers", () => {
     const dir = copy();
-    const manifest = JSON.parse(readFileSync(join(dir, "agentpkg.json"), "utf8"));
+    const manifest = JSON.parse(readFileSync(join(dir, "agentdist.json"), "utf8"));
     delete manifest.hooksDir;
     manifest.hooks.greet.matcher = ["Bash"];
-    writeFileSync(join(dir, "agentpkg.json"), JSON.stringify(manifest));
+    writeFileSync(join(dir, "agentdist.json"), JSON.stringify(manifest));
     const found = problems(dir).join("\n");
     expect(found).toMatch(/hooks.guard: the command uses \{\{hooks_dir\}\} but the package has no hooksDir/);
     expect(found).toMatch(/hooks.greet: only PreToolUse and PostToolUse take a matcher/);
 
     manifest.mcpServers.bad = { transport: "http", url: "not a url" };
     manifest.mcpServers.typo = { command: "x", arg: [] };
-    writeFileSync(join(dir, "agentpkg.json"), JSON.stringify(manifest));
+    writeFileSync(join(dir, "agentdist.json"), JSON.stringify(manifest));
     const shape = problems(dir).join("\n");
     expect(shape).toMatch(/mcpServers.bad.url/);
     expect(shape).toMatch(/mcpServers.typo: Unrecognized key: "arg"/);
@@ -105,9 +105,9 @@ describe("loadPackage", () => {
 
   it("rejects unknown manifest keys and a bad name", () => {
     const dir = copy();
-    writeFileSync(join(dir, "agentpkg.json"), JSON.stringify({ engine: "v1", name: "Bad Name", hooks: [] }));
+    writeFileSync(join(dir, "agentdist.json"), JSON.stringify({ engine: "v1", name: "Bad Name", hooks: [] }));
     const found = problems(dir).join("\n");
-    expect(found).toMatch(/agentpkg.json → name/);
+    expect(found).toMatch(/agentdist.json → name/);
     expect(found).toMatch(/hooks/);
     rmSync(dir, { recursive: true });
   });

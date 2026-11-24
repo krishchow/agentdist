@@ -1,4 +1,4 @@
-import type { AgentPkg, Hook, HttpServer, StdioServer } from "../schema/manifest";
+import type { AgentDist, Hook, HttpServer, StdioServer } from "../schema/manifest";
 import type { Doc } from "./markdown";
 
 /**
@@ -71,11 +71,11 @@ export const NODE_KINDS = [
 ] as const satisfies readonly NodeKind[];
 
 export interface Package {
-  /** Absolute path of the directory holding `agentpkg.json`. */
+  /** Absolute path of the directory holding `agentdist.json`. */
   root: string;
   name: string;
   version: string;
-  manifest: AgentPkg;
+  manifest: AgentDist;
   nodes: Node[];
   /** The contents of `hooksDir`: what the hook commands run. */
   hookFiles: SkillFile[];

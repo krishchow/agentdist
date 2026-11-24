@@ -261,7 +261,7 @@
       }
     },
     "listing": {
-      "description": "Marketplace metadata, read only by `agentpkg pack`.",
+      "description": "Marketplace metadata, read only by `agentdist pack`.",
       "type": "object",
       "properties": {
         "displayName": {
@@ -326,7 +326,7 @@
     },
     "pack": {
       "default": {},
-      "description": "Native plugin formats to generate with `agentpkg pack`, keyed by target id (claude-plugin, codex-plugin, agent-plugin, dsh-bundle), each with its own options.",
+      "description": "Native plugin formats to generate with `agentdist pack`, keyed by target id (claude-plugin, codex-plugin, agent-plugin, dsh-bundle), each with its own options.",
       "type": "object",
       "propertyNames": {
         "type": "string"
@@ -345,5 +345,5 @@
     "name"
   ],
   "additionalProperties": false,
-  "title": "agentpkg.json"
+  "title": "agentdist.json"
 }

@@ -68,13 +68,15 @@ describe("install into Claude Code", () => {
         PreToolUse: [
           {
             matcher: "Bash|Edit",
-            hooks: [{ type: "command", command: 'node "$HOME/.agentpkg/demo/hooks"/guard.mjs', timeout: 10 }],
+            hooks: [
+              { type: "command", command: 'node "$HOME/.agentdist/demo/hooks"/guard.mjs', timeout: 10 },
+            ],
           },
         ],
         SessionStart: [{ hooks: [{ type: "command", command: "echo demo ready" }] }],
       },
     });
-    expect(statSync(join(env.home, ".agentpkg/demo/hooks/guard.mjs")).mode & 0o111).not.toBe(0);
+    expect(statSync(join(env.home, ".agentdist/demo/hooks/guard.mjs")).mode & 0o111).not.toBe(0);
     expect(status("demo", env).user?.harnesses).toEqual(["claude"]);
   });
 
@@ -85,7 +87,7 @@ describe("install into Claude Code", () => {
       "node .claude/skills/demo-setup/scripts/run.mjs check",
     );
     expect(JSON.parse(read(env.projectRoot, ".mcp.json")).mcpServers.demo.command).toBe("npx");
-    expect(existsSync(join(env.projectRoot, ".agentpkg/demo.json"))).toBe(true);
+    expect(existsSync(join(env.projectRoot, ".agentdist/demo.json"))).toBe(true);
     expect(existsSync(join(env.home, ".claude"))).toBe(false);
   });
 
@@ -126,7 +128,7 @@ describe("install into Claude Code", () => {
     const result = install({ pkg: demo(), harnesses: [claude], scope: "user", env, dryRun: true });
     expect(types(result)).toEqual(["create"]);
     expect(existsSync(join(env.home, ".claude"))).toBe(false);
-    expect(existsSync(join(env.home, ".agentpkg"))).toBe(false);
+    expect(existsSync(join(env.home, ".agentdist"))).toBe(false);
   });
 });
 
@@ -276,7 +278,7 @@ describe("hooks", () => {
 
     uninstall({ pkgName: "demo", scope: "user", env });
     expect(read(settings(env))).toBe(before);
-    expect(existsSync(join(env.home, ".agentpkg"))).toBe(false);
+    expect(existsSync(join(env.home, ".agentdist"))).toBe(false);
   });
 
   it("replaces its own registration when the hook changes, and leaves one the user edited", () => {
@@ -311,7 +313,7 @@ describe("hooks", () => {
       hooks: {
         preToolUse: [
           {
-            command: 'node "$CURSOR_PROJECT_DIR/.agentpkg/demo/hooks"/guard.mjs',
+            command: 'node "$CURSOR_PROJECT_DIR/.agentdist/demo/hooks"/guard.mjs',
             matcher: "Shell|Write",
             timeout: 10,
           },
@@ -351,7 +353,7 @@ describe("remote MCP servers", () => {
       ".codex/config.toml",
       ".cursor/mcp.json",
       ".gemini/settings.json",
-      ".agentpkg/demo.json",
+      ".agentdist/demo.json",
     ]) {
       expect(read(env.home, file)).not.toContain("s3cret");
     }

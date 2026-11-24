@@ -1,12 +1,12 @@
-// Emit the JSON Schema for agentpkg.json from the Zod type, so editors validate manifests.
+// Emit the JSON Schema for agentdist.json from the Zod type, so editors validate manifests.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { z } from "zod";
-import { AgentPkg } from "../dist/index.js";
+import { AgentDist } from "../dist/index.js";
 
-const schema = z.toJSONSchema(AgentPkg, { io: "input" });
-schema.title = "agentpkg.json";
+const schema = z.toJSONSchema(AgentDist, { io: "input" });
+schema.title = "agentdist.json";
 mkdirSync(new URL("../schema/", import.meta.url), { recursive: true });
 writeFileSync(
-  new URL("../schema/agentpkg.schema.json", import.meta.url),
+  new URL("../schema/agentdist.schema.json", import.meta.url),
   `${JSON.stringify(schema, null, 2)}\n`,
 );

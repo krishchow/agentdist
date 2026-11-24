@@ -8,43 +8,43 @@ path was checked against, are in the harness's file.
 
 ## User scope (`--user`)
 
-| Harness | id | Skills | Subagents | Commands | MCP server |
-|---|---|---|---|---|---|
-| Claude Code | `claude` | `~/.claude/skills` | `~/.claude/agents` | `~/.claude/commands` | `~/.claude.json` → `mcpServers` |
-| Codex | `codex` | `~/.agents/skills` | `~/.codex/agents` | — | `~/.codex/config.toml` → `mcp_servers` |
-| Cursor | `cursor` | `~/.agents/skills` | `~/.cursor/agents` | `~/.cursor/commands` | `~/.cursor/mcp.json` → `mcpServers` |
-| GitHub Copilot | `copilot` | `~/.copilot/skills` | `~/.copilot/agents` | — | `~/.copilot/mcp-config.json` → `mcpServers` |
-| Gemini CLI | `gemini` | `~/.agents/skills` | `~/.gemini/agents` | `~/.gemini/commands` | `~/.gemini/settings.json` → `mcpServers` |
-| OpenCode | `opencode` | `~/.agents/skills` | `~/.config/opencode/agents` | `~/.config/opencode/commands` | `~/.config/opencode/opencode.json` → `mcp.servers` |
-| Factory Droid | `factory` | `~/.agents/skills` | `~/.factory/droids` | `~/.factory/commands` | `~/.factory/mcp.json` → `mcpServers` |
-| Devin (Windsurf) | `devin` | `~/.agents/skills` | `~/.config/devin/agents` | — | `~/.config/devin/mcp_config.json` → `mcpServers` |
-| Cline | `cline` | `~/.cline/skills` | — | `~/.cline/workflows` | `~/.cline/data/settings/cline_mcp_settings.json` → `mcpServers` |
-| Kilo Code | `kilo` | `~/.agents/skills` | `~/.config/kilo/agents` | `~/.config/kilo/commands` | `~/.config/kilo/kilo.json` → `mcp` |
-| Qwen Code | `qwen` | `~/.agents/skills` | `~/.qwen/agents` | `~/.qwen/commands` | `~/.qwen/settings.json` → `mcpServers` |
-| Amp | `amp` | `~/.agents/skills` | — | — | `~/.config/amp/settings.json` → `amp.mcpServers` |
-| pi | `pi` | `~/.agents/skills` | — | `~/.pi/agent/prompts` | `~/.pi/agent/mcp.json` → `mcpServers` |
-| Goose | `goose` | `~/.agents/skills` | — | — | `~/.config/goose/config.yaml` → `extensions` |
-| Zed | `zed` | `~/.agents/skills` | — | — | `~/.config/zed/settings.json` → `context_servers` |
+| Harness | id | Skills | Subagents | Commands | MCP server | Hooks |
+|---|---|---|---|---|---|---|
+| Claude Code | `claude` | `~/.claude/skills` | `~/.claude/agents` | `~/.claude/commands` | `~/.claude.json` → `mcpServers` | `~/.claude/settings.json` → `hooks` |
+| Codex | `codex` | `~/.agents/skills` | `~/.codex/agents` | — | `~/.codex/config.toml` → `mcp_servers` | `~/.codex/hooks.json` → `hooks` |
+| Cursor | `cursor` | `~/.agents/skills` | `~/.cursor/agents` | `~/.cursor/commands` | `~/.cursor/mcp.json` → `mcpServers` | `~/.cursor/hooks.json` → `hooks` |
+| GitHub Copilot | `copilot` | `~/.copilot/skills` | `~/.copilot/agents` | — | `~/.copilot/mcp-config.json` → `mcpServers` | `~/.copilot/hooks` |
+| Gemini CLI | `gemini` | `~/.agents/skills` | `~/.gemini/agents` | `~/.gemini/commands` | `~/.gemini/settings.json` → `mcpServers` | `~/.gemini/settings.json` → `hooks` |
+| OpenCode | `opencode` | `~/.agents/skills` | `~/.config/opencode/agents` | `~/.config/opencode/commands` | `~/.config/opencode/opencode.json` → `mcp.servers` | — |
+| Factory Droid | `factory` | `~/.agents/skills` | `~/.factory/droids` | `~/.factory/commands` | `~/.factory/mcp.json` → `mcpServers` | `~/.factory/settings.json` → `hooks` |
+| Devin (Windsurf) | `devin` | `~/.agents/skills` | `~/.config/devin/agents` | — | `~/.config/devin/mcp_config.json` → `mcpServers` | `~/.config/devin/config.json` → `hooks` |
+| Cline | `cline` | `~/.cline/skills` | — | `~/.cline/workflows` | `~/.cline/data/settings/cline_mcp_settings.json` → `mcpServers` | — |
+| Kilo Code | `kilo` | `~/.agents/skills` | `~/.config/kilo/agents` | `~/.config/kilo/commands` | `~/.config/kilo/kilo.json` → `mcp` | — |
+| Qwen Code | `qwen` | `~/.agents/skills` | `~/.qwen/agents` | `~/.qwen/commands` | `~/.qwen/settings.json` → `mcpServers` | `~/.qwen/settings.json` → `hooks` |
+| Amp | `amp` | `~/.agents/skills` | — | — | `~/.config/amp/settings.json` → `amp.mcpServers` | — |
+| pi | `pi` | `~/.agents/skills` | — | `~/.pi/agent/prompts` | `~/.pi/agent/mcp.json` → `mcpServers` | — |
+| Goose | `goose` | `~/.agents/skills` | — | — | `~/.config/goose/config.yaml` → `extensions` | `~/.agents/plugins` |
+| Zed | `zed` | `~/.agents/skills` | — | — | `~/.config/zed/settings.json` → `context_servers` | — |
 
 ## Repository scope (`--local`)
 
-| Harness | id | Skills | Subagents | Commands | MCP server |
-|---|---|---|---|---|---|
-| Claude Code | `claude` | `.claude/skills` | `.claude/agents` | `.claude/commands` | `.mcp.json` → `mcpServers` |
-| Codex | `codex` | `.agents/skills` | `.codex/agents` | — | `.codex/config.toml` → `mcp_servers` |
-| Cursor | `cursor` | `.agents/skills` | `.cursor/agents` | `.cursor/commands` | `.cursor/mcp.json` → `mcpServers` |
-| GitHub Copilot | `copilot` | `.github/skills` | `.github/agents` | — | `.github/mcp.json` → `mcpServers` |
-| Gemini CLI | `gemini` | `.agents/skills` | `.gemini/agents` | `.gemini/commands` | `.gemini/settings.json` → `mcpServers` |
-| OpenCode | `opencode` | `.agents/skills` | `.opencode/agents` | `.opencode/commands` | `opencode.json` → `mcp.servers` |
-| Factory Droid | `factory` | `.agents/skills` | `.factory/droids` | `.factory/commands` | `.factory/mcp.json` → `mcpServers` |
-| Devin (Windsurf) | `devin` | `.agents/skills` | `.devin/agents` | `.devin/workflows` | `.devin/mcp_config.json` → `mcpServers` |
-| Cline | `cline` | `.agents/skills` | — | `.cline/workflows` | — |
-| Kilo Code | `kilo` | `.agents/skills` | `.kilo/agents` | `.kilo/commands` | `kilo.json` → `mcp` |
-| Qwen Code | `qwen` | `.agents/skills` | `.qwen/agents` | `.qwen/commands` | `.qwen/settings.json` → `mcpServers` |
-| Amp | `amp` | `.agents/skills` | — | — | `.amp/settings.json` → `amp.mcpServers` |
-| pi | `pi` | `.agents/skills` | — | `.pi/prompts` | `.pi/mcp.json` → `mcpServers` |
-| Goose | `goose` | `.agents/skills` | — | — | — |
-| Zed | `zed` | `.agents/skills` | — | — | — |
+| Harness | id | Skills | Subagents | Commands | MCP server | Hooks |
+|---|---|---|---|---|---|---|
+| Claude Code | `claude` | `.claude/skills` | `.claude/agents` | `.claude/commands` | `.mcp.json` → `mcpServers` | `.claude/settings.json` → `hooks` |
+| Codex | `codex` | `.agents/skills` | `.codex/agents` | — | `.codex/config.toml` → `mcp_servers` | `.codex/hooks.json` → `hooks` |
+| Cursor | `cursor` | `.agents/skills` | `.cursor/agents` | `.cursor/commands` | `.cursor/mcp.json` → `mcpServers` | `.cursor/hooks.json` → `hooks` |
+| GitHub Copilot | `copilot` | `.github/skills` | `.github/agents` | — | `.github/mcp.json` → `mcpServers` | `.github/hooks` |
+| Gemini CLI | `gemini` | `.agents/skills` | `.gemini/agents` | `.gemini/commands` | `.gemini/settings.json` → `mcpServers` | `.gemini/settings.json` → `hooks` |
+| OpenCode | `opencode` | `.agents/skills` | `.opencode/agents` | `.opencode/commands` | `opencode.json` → `mcp.servers` | — |
+| Factory Droid | `factory` | `.agents/skills` | `.factory/droids` | `.factory/commands` | `.factory/mcp.json` → `mcpServers` | `.factory/settings.json` → `hooks` |
+| Devin (Windsurf) | `devin` | `.agents/skills` | `.devin/agents` | `.devin/workflows` | `.devin/mcp_config.json` → `mcpServers` | `.devin/hooks.v1.json` → `(top level)` |
+| Cline | `cline` | `.agents/skills` | — | `.cline/workflows` | — | — |
+| Kilo Code | `kilo` | `.agents/skills` | `.kilo/agents` | `.kilo/commands` | `kilo.json` → `mcp` | — |
+| Qwen Code | `qwen` | `.agents/skills` | `.qwen/agents` | `.qwen/commands` | `.qwen/settings.json` → `mcpServers` | `.qwen/settings.json` → `hooks` |
+| Amp | `amp` | `.agents/skills` | — | — | `.amp/settings.json` → `amp.mcpServers` | — |
+| pi | `pi` | `.agents/skills` | — | `.pi/prompts` | `.pi/mcp.json` → `mcpServers` | — |
+| Goose | `goose` | `.agents/skills` | — | — | — | `.agents/plugins` |
+| Zed | `zed` | `.agents/skills` | — | — | — | — |
 
 ## How each harness names things
 

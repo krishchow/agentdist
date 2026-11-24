@@ -10,16 +10,21 @@ const KINDS = [
   ["agent", "Subagents"],
   ["command", "Commands"],
   ["mcpServer", "MCP server"],
+  ["hook", "Hooks"],
 ];
 const show = (path, scope) =>
   scope === "local" ? path.replace(`${env.projectRoot}/`, "") : path.replace(env.home, "~");
 
 function cell(harness, kind, scope) {
   const plan = planInstall(pkg, [harness], scope, env);
-  const ops = [...plan.files, ...plan.configs].filter((op) => op.claims[0].node.startsWith(`${kind}:`));
+  const ops = [...plan.items, ...plan.configs, ...plan.files].filter(
+    (op) => op.claims[0].node.startsWith(`${kind}:`) && !op.path.includes("/.agentdist/"),
+  );
   if (ops.length === 0) return "—";
   const op = ops.find((o) => o.path.endsWith("SKILL.md")) ?? ops[0];
   if (op.type === "config") return `\`${show(op.path, scope)}\` → \`${op.keyPath.slice(0, -1).join(".")}\``;
+  if (op.type === "config-item")
+    return `\`${show(op.path, scope)}\` → \`${op.keyPath.slice(0, -1).join(".") || "(top level)"}\``;
   // Show the directory, not the fixture's file.
   const dir = show(op.path, scope).replace(/\/demo-[^/]+(\/.*)?$/, "");
   return `\`${dir}\``;

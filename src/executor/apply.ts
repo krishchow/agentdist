@@ -81,7 +81,7 @@ class Transaction {
     this.remember(target);
     const mode = existsSync(target) ? statSync(target).mode & 0o777 : executable ? 0o755 : 0o644;
     mkdirSync(dirname(target), { recursive: true });
-    const temp = `${target}.agentpkg-${process.pid}.tmp`;
+    const temp = `${target}.agentdist-${process.pid}.tmp`;
     writeFileSync(temp, content, { mode });
     renameSync(temp, target);
     if (executable) chmodSync(target, mode | 0o111);

@@ -1,6 +1,6 @@
-# agentpkg
+# agentdist
 
-An install engine for agent packages. Write your skills, subagents, commands and MCP servers once,
+An install engine for agent packages. Write your skills, subagents, commands, hooks and MCP servers once,
 declare them in one manifest, and install them into any AI coding harness, either for one
 repository or for the user.
 
@@ -23,17 +23,18 @@ Installed notarize 1.5.0 for claude, codex at user scope:
   + ~/.codex/config.toml → mcp_servers.notarize
 ```
 
-The package in that example contains no installer code. It has an `agentpkg.json`, a `skills/`
+The package in that example contains no installer code. It has an `agentdist.json`, a `skills/`
 directory, and a few lines that hand its `install` subcommand to this engine.
 
 ## What a package looks like
 
 ```
 my-package/
-  agentpkg.json
+  agentdist.json
   skills/<name>/SKILL.md
   agents/<name>.md       (optional)
   commands/<name>.md     (optional)
+  hooks/…                (optional)
 ```
 
 ```json
@@ -61,7 +62,7 @@ The full contract, which is the seam between a package and the engine, is in
 ## Using it from a package
 
 ```ts
-import { runCli } from "agentpkg";
+import { runCli } from "agentdist";
 
 if (["install", "uninstall", "status", "harnesses"].includes(process.argv[2])) {
   process.exit(await runCli({ packageRoot, argv: process.argv.slice(2), bin: "npx my-package" }));
@@ -71,9 +72,9 @@ if (["install", "uninstall", "status", "harnesses"].includes(process.argv[2])) {
 Or run a package from a directory with the standalone binary:
 
 ```bash
-agentpkg install --package ./my-package --harness claude,codex --user
-agentpkg validate ./my-package          # check it against the contract
-agentpkg pack ./my-package [--check]    # regenerate its native plugin manifests
+agentdist install --package ./my-package --harness claude,codex --user
+agentdist validate ./my-package          # check it against the contract
+agentdist pack ./my-package [--check]    # regenerate its native plugin manifests
 ```
 
 ## Three ways a package reaches a harness
@@ -82,7 +83,7 @@ agentpkg pack ./my-package [--check]    # regenerate its native plugin manifests
 |---|---|---|---|
 | Vendored, repository | the repository (`.claude/skills`, `.mcp.json`, …) | re-run the installer | `install --local` |
 | Vendored, user | your home (`~/.claude/skills`, `~/.claude.json`, …) | re-run the installer | `install --user` |
-| Native plugin | the harness's plugin system | the harness updates it | `agentpkg pack`, committed to the package's repository |
+| Native plugin | the harness's plugin system | the harness updates it | `agentdist pack`, committed to the package's repository |
 
 All three come from the same manifest. `pack` generates a Claude Code plugin, a Codex plugin, a
 portable [Agent Plugin](https://agent-plugins.org/specification) and a DeepSeek Harness bundle.
@@ -112,7 +113,7 @@ ordinary markdown subagent handler pointed at a different directory. Adding one 
 ## How it works
 
 ```
-agentpkg.json ──▶ nodes ──harness──▶ ops ──planner──▶ plan ──executor──▶ disk
+agentdist.json ──▶ nodes ──harness──▶ ops ──planner──▶ plan ──executor──▶ disk
 ```
 
 A harness never touches the filesystem. It answers what each node should become, as file and
@@ -125,8 +126,8 @@ produces. See [docs/architecture.md](docs/architecture.md).
 Version 0.1, not yet published to npm. Paths and config shapes were checked against each harness's
 documentation in November 2026 (notes in [docs/research](docs/research)); they have been exercised
 end to end against sandboxed home directories, not against every harness's real application.
-Not built yet: hooks as a node kind, HTTP MCP servers, and installing a package by npm name from
-the standalone binary.
+Not built yet: installing a package by npm name from the standalone binary, hooks in the Codex
+plugin output, and Windows testing.
 
 ## Development
 

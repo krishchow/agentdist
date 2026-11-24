@@ -8,9 +8,9 @@ import { runPack } from "../src/pack/run";
 import { FIXTURE } from "./helpers";
 
 function fixture(pack: Record<string, unknown>, strip = false) {
-  const dir = mkdtempSync(join(tmpdir(), "agentpkg-pack-"));
+  const dir = mkdtempSync(join(tmpdir(), "agentdist-pack-"));
   cpSync(FIXTURE, dir, { recursive: true });
-  const manifest = JSON.parse(readFileSync(join(dir, "agentpkg.json"), "utf8"));
+  const manifest = JSON.parse(readFileSync(join(dir, "agentdist.json"), "utf8"));
   manifest.pack = pack;
   if (strip) {
     // A package with no symbolic references, like most existing ones.
@@ -22,7 +22,7 @@ function fixture(pack: Record<string, unknown>, strip = false) {
     );
     writeFileSync(join(dir, "skills/ship-it/references/notes.md"), "Plain.\n");
   }
-  writeFileSync(join(dir, "agentpkg.json"), JSON.stringify(manifest));
+  writeFileSync(join(dir, "agentdist.json"), JSON.stringify(manifest));
   return dir;
 }
 const readJson = (dir: string, path: string) => JSON.parse(readFileSync(join(dir, path), "utf8"));

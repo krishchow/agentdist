@@ -61,7 +61,7 @@ export const Ledger = z.object({
 });
 export type Ledger = z.infer<typeof Ledger>;
 
-export const STATE_DIR = ".agentpkg";
+export const STATE_DIR = ".agentdist";
 
 /** The directory a scope's paths are recorded relative to: the repository, or the user's home. */
 export function scopeRoot(scope: Scope, env: Env): string {

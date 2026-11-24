@@ -28,7 +28,7 @@
   "hooks": [
     {
       "type": "command",
-      "command": "node \"$CLAUDE_PROJECT_DIR/.agentpkg/demo/hooks\"/guard.mjs",
+      "command": "node \"$CLAUDE_PROJECT_DIR/.agentdist/demo/hooks\"/guard.mjs",
       "timeout": 10
     }
   ]
@@ -44,7 +44,7 @@
   ]
 }
 
-=== .agentpkg/demo/hooks/guard.mjs (executable)
+=== .agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === .claude/agents/demo-reviewer.md

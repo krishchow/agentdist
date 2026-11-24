@@ -1,7 +1,7 @@
 /**
- * agentpkg: the install engine for agent packages.
+ * agentdist: the install engine for agent packages.
  *
- * A package is content in one canonical dialect plus an `agentpkg.json` manifest. The engine turns
+ * A package is content in one canonical dialect plus an `agentdist.json` manifest. The engine turns
  * it into typed nodes, asks each harness what those nodes become, and applies the result while
  * recording exactly what it owns.
  */
@@ -56,8 +56,8 @@ export { runPack } from "./pack/run";
 export type { PackOutput, PackTarget } from "./pack/types";
 export { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "./schema/content";
 export {
-  AgentPkg,
-  type AgentPkgInput,
+  AgentDist,
+  type AgentDistInput,
   Listing,
   MANIFEST_FILE,
   McpServer,

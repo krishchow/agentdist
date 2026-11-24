@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import type { z } from "zod";
 import { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "../schema/content";
-import { AgentPkg, MANIFEST_FILE } from "../schema/manifest";
+import { AgentDist, MANIFEST_FILE } from "../schema/manifest";
 import { parseDoc } from "./markdown";
 import type { AgentNode, CommandNode, Node, Package, SkillFile, SkillNode } from "./nodes";
 import { findRefs } from "./refs";
@@ -70,7 +70,7 @@ export function loadPackage(root: string): Package {
   } catch (e) {
     throw new PackageError(dir, [`${MANIFEST_FILE} is not valid JSON: ${(e as Error).message}`]);
   }
-  const parsed = AgentPkg.safeParse(raw);
+  const parsed = AgentDist.safeParse(raw);
   if (!parsed.success) throw new PackageError(dir, issues(parsed.error, MANIFEST_FILE));
   const manifest = parsed.data;
 

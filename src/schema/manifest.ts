@@ -156,12 +156,12 @@ export const Listing = z.strictObject({
 export type Listing = z.infer<typeof Listing>;
 
 /**
- * `agentpkg.json`: the only file the engine reads for intent.
+ * `agentdist.json`: the only file the engine reads for intent.
  *
  * A package is content in one canonical dialect plus this manifest. It contains no installer code
  * and never names a harness, except to restrict where it may be installed.
  */
-export const AgentPkg = z.strictObject({
+export const AgentDist = z.strictObject({
   $schema: z.string().optional(),
   /** Manifest contract version. A floating major: the engine accepts every `v1` manifest. */
   engine: z
@@ -236,16 +236,16 @@ export const AgentPkg = z.strictObject({
     .optional()
     .describe("Restrict the package to these harness ids. Omit to allow every harness the engine knows."),
 
-  listing: Listing.optional().describe("Marketplace metadata, read only by `agentpkg pack`."),
+  listing: Listing.optional().describe("Marketplace metadata, read only by `agentdist pack`."),
   /** Per-target options for `pack`, keyed by pack target id. Each target validates its own. */
   pack: z
     .record(z.string(), z.record(z.string(), z.unknown()))
     .default({})
     .describe(
-      "Native plugin formats to generate with `agentpkg pack`, keyed by target id (claude-plugin, codex-plugin, agent-plugin, dsh-bundle), each with its own options.",
+      "Native plugin formats to generate with `agentdist pack`, keyed by target id (claude-plugin, codex-plugin, agent-plugin, dsh-bundle), each with its own options.",
     ),
 });
-export type AgentPkg = z.infer<typeof AgentPkg>;
-export type AgentPkgInput = z.input<typeof AgentPkg>;
+export type AgentDist = z.infer<typeof AgentDist>;
+export type AgentDistInput = z.input<typeof AgentDist>;
 
-export const MANIFEST_FILE = "agentpkg.json";
+export const MANIFEST_FILE = "agentdist.json";

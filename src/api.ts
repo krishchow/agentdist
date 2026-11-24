@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { version as ENGINE_VERSION } from "../package.json";
+import packageJson from "../package.json";
 import { type ApplyResult, applyInstall, applyUninstall } from "./executor/apply";
 import { type Ledger, readLedger } from "./executor/ledger";
 import type { Env, HarnessDef } from "./harness/define";
@@ -12,7 +12,8 @@ import type { Plan } from "./ops/types";
 import { SCOPES, type Scope } from "./schema/manifest";
 import { headerEnv } from "./surfaces/mcp";
 
-export { ENGINE_VERSION };
+/** Annotated so the published type declarations do not reach for package.json. */
+export const ENGINE_VERSION: string = packageJson.version;
 
 /** The nearest ancestor holding a `.git`, which is where harnesses look for project config. */
 export function findProjectRoot(cwd: string): string {

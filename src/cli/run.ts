@@ -20,7 +20,7 @@ import { SCOPES, type Scope } from "../schema/manifest";
 import { type Args, parseArgs, UsageError } from "./args";
 
 export interface CliOptions {
-  /** Directory holding the package's `agentpkg.json`. */
+  /** Directory holding the package's `agentdist.json`. */
   packageRoot: string;
   argv: string[];
   /** How the user invokes this CLI, for help and follow-up hints: `npx notarize-mcp`. */
@@ -163,14 +163,14 @@ function printConflicts(result: ApplyResult, write: (text: string) => void): voi
 export async function runCli(options: CliOptions): Promise<number> {
   const out = options.stdout ?? ((text: string) => void process.stdout.write(text));
   const err = options.stderr ?? ((text: string) => void process.stderr.write(text));
-  const bin = options.bin ?? "agentpkg";
+  const bin = options.bin ?? "agentdist";
 
   let args: Args;
   let pkg: Package;
   try {
     args = parseArgs(options.argv);
     if (args.version) {
-      out(`agentpkg engine ${ENGINE_VERSION}\n`);
+      out(`agentdist engine ${ENGINE_VERSION}\n`);
       return 0;
     }
     pkg = loadPackage(args.packageRoot ?? options.packageRoot);

@@ -5,8 +5,8 @@ import { runCli } from "./run";
 const AUTHOR_HELP = [
   "",
   "For package authors:",
-  "  agentpkg validate [dir]              check a package against the contract",
-  "  agentpkg pack [dir] [--check]        regenerate native plugin manifests (--check: fail if stale)",
+  "  agentdist validate [dir]              check a package against the contract",
+  "  agentdist pack [dir] [--check]        regenerate native plugin manifests (--check: fail if stale)",
   "      --as-version <v>                 generate as if the package were at version <v>",
   "",
   "Every command takes --package <dir> (default: the current directory).",
@@ -25,8 +25,10 @@ async function main(): Promise<number> {
         err: (t) => process.stderr.write(t),
       });
     }
-    const code = await runCli({ packageRoot: args.packageRoot ?? ".", argv, bin: "agentpkg" });
-    if (args.help || command === undefined || command === "help") process.stdout.write(AUTHOR_HELP);
+    const code = await runCli({ packageRoot: args.packageRoot ?? ".", argv, bin: "agentdist" });
+    if (!args.version && (args.help || command === undefined || command === "help")) {
+      process.stdout.write(AUTHOR_HELP);
+    }
     return code;
   } catch (e) {
     if (e instanceof UsageError) {

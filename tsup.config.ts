@@ -9,4 +9,6 @@ export default defineConfig({
   clean: true,
   splitting: true,
   sourcemap: false,
+  // dist/cli.js is the package's bin; the shebang is harmless on the library entry.
+  banner: { js: "#!/usr/bin/env node" },
 });

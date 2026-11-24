@@ -1,7 +1,7 @@
 # Architecture
 
 ```
-agentpkg.json ──Zod──▶ nodes ──harness──▶ ops ──planner──▶ plan ──executor──▶ disk
+agentdist.json ──Zod──▶ nodes ──harness──▶ ops ──planner──▶ plan ──executor──▶ disk
  + content            (IR)    (pure)            (merge)            (+ ledger, backup, rollback)
 ```
 
@@ -21,18 +21,21 @@ Each arrow is one module boundary, and data crosses it in one direction only.
 
 ## Nodes
 
-`src/ir/nodes.ts` defines four node kinds: `skill`, `agent`, `command`, `mcpServer`. A node holds
+`src/ir/nodes.ts` defines five node kinds: `skill`, `agent`, `command`, `mcpServer`, `hook`. A node holds
 what the package author wrote, parsed and validated, with nothing harness-shaped in it. Loading
 (`src/ir/load.ts`) reports every problem in a package at once.
 
 ## Ops
 
 A harness never touches the filesystem. It answers one question per node: what should exist? The
-answer is a list of two kinds of op (`src/ops/types.ts`):
+answer is a list of three kinds of op (`src/ops/types.ts`):
 
 - **`file`**: a whole file the package owns.
 - **`config`**: one key the package owns inside a config file that belongs to the user, as a
   format (`json`, `jsonc`, `toml`, `yaml`), a key path and a value.
+- **`config-item`**: one element the package owns inside a list in such a file, which is how hooks
+  are registered. It is identified by its value, so it is never added twice, and only an element
+  still equal to what was written is ever removed.
 
 That is the entire vocabulary. Because adapters only describe, dry runs, uninstall, rollback,
 conflict detection and the ownership ledger are written once, in the executor, and a harness is
@@ -61,7 +64,9 @@ Handlers are not written per harness. They come from **surfaces**:
 | `markdownAgents(dir, opts)` | directory, extension, tool-list style, folder layout | subagents as markdown |
 | `tomlAgents(dir, opts)` | directory, field builder | subagents as TOML (Codex) |
 | `markdownCommands(dir, opts)` / `tomlCommands` | directory, arguments placeholder | slash commands |
-| `mcpConfig({file, format, keyPath, entry})` | file per scope, format, key path, entry shape | MCP registration |
+| `mcpConfig({file, format, keyPath, stdio, http})` | file per scope, format, key path, entry shapes | MCP registration |
+| `hooksConfig({file, keyPath, item, events})` | file per scope, event names, registration shape | hooks in a config file's lists |
+| `hooksDir({dir, file, events})` | directory per scope, event names, file shape | hooks as one definition file each |
 
 So Factory's subagents are `markdownAgents` pointed at `droids/` instead of `agents/`, and twelve
 harnesses share the single `sharedSkills()` handler. See [adding a harness](adding-a-harness.md).
@@ -82,6 +87,8 @@ only rewriting of content the engine does.
   in the plan already writes one of them, the op is dropped and that file is claimed instead.
   Cursor reads both `.agents/skills` and `.claude/skills`; installed alongside Claude Code it uses
   Claude Code's copy rather than listing every skill twice.
+- A hook registration works the same way: Cursor and Devin also run Claude Code's hooks, so with
+  Claude Code in the plan they claim its registration instead of adding one that would fire twice.
 - If two harnesses want different content at one path, the first wins and the user is told.
 
 ## The executor
@@ -96,7 +103,7 @@ only rewriting of content the engine does.
    restores all of them. Files are written to a temporary name and renamed. A config file that is
    a symlink is written through, not replaced.
 
-The **ledger** (`.agentpkg/<package>.json` under the repository or the home directory) records each
+The **ledger** (`.agentdist/<package>.json` under the repository or the home directory) records each
 file's hash and each config value's hash, with the harnesses that claim it. It is the only basis
 for deletion. Uninstall works from the ledger alone, so it needs no package source, and it removes
 an entry only when its last claiming harness goes.

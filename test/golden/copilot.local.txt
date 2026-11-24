@@ -30,7 +30,7 @@
   }
 }
 
-=== .agentpkg/demo/hooks/guard.mjs (executable)
+=== .agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === .github/agents/demo-reviewer.agent.md
@@ -67,7 +67,7 @@ You review changes. Use demo/doctor to check the environment.
       {
         "type": "command",
         "matcher": "Bash|Edit",
-        "command": "node .agentpkg/demo/hooks/guard.mjs",
+        "command": "node .agentdist/demo/hooks/guard.mjs",
         "timeoutSec": 10
       }
     ]

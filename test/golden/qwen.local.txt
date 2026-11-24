@@ -29,7 +29,7 @@
   "hooks": [
     {
       "type": "command",
-      "command": "node \"$QWEN_PROJECT_DIR/.agentpkg/demo/hooks\"/guard.mjs",
+      "command": "node \"$QWEN_PROJECT_DIR/.agentdist/demo/hooks\"/guard.mjs",
       "name": "demo-guard",
       "timeout": 10
     }
@@ -47,7 +47,7 @@
   ]
 }
 
-=== .agentpkg/demo/hooks/guard.mjs (executable)
+=== .agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === .agents/skills/demo-setup/scripts/run.mjs (executable)

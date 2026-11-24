@@ -29,7 +29,7 @@
     {
       "name": "demo-guard",
       "type": "command",
-      "command": "node \"$HOME/.agentpkg/demo/hooks\"/guard.mjs",
+      "command": "node \"$HOME/.agentdist/demo/hooks\"/guard.mjs",
       "timeout": 10000
     }
   ]
@@ -46,7 +46,7 @@
   ]
 }
 
-=== ~/.agentpkg/demo/hooks/guard.mjs (executable)
+=== ~/.agentdist/demo/hooks/guard.mjs (executable)
 <93 bytes, copied as is>
 
 === ~/.agents/skills/demo-setup/scripts/run.mjs (executable)
