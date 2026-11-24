@@ -39,15 +39,29 @@ for (const [scope, title] of [
   ["user", "User scope (`--user`)"],
   ["local", "Repository scope (`--local`)"],
 ]) {
-  lines.push(`## ${title}`, "", `| Harness | id | ${KINDS.map(([, label]) => label).join(" | ")} |`, `|---|---|${KINDS.map(() => "---").join("|")}|`);
+  lines.push(
+    `## ${title}`,
+    "",
+    `| Harness | id | ${KINDS.map(([, label]) => label).join(" | ")} |`,
+    `|---|---|${KINDS.map(() => "---").join("|")}|`,
+  );
   for (const harness of HARNESSES) {
-    lines.push(`| ${harness.label} | \`${harness.id}\` | ${KINDS.map(([kind]) => cell(harness, kind, scope)).join(" | ")} |`);
+    lines.push(
+      `| ${harness.label} | \`${harness.id}\` | ${KINDS.map(([kind]) => cell(harness, kind, scope)).join(" | ")} |`,
+    );
   }
   lines.push("");
 }
-lines.push("## How each harness names things", "", "| Harness | An MCP tool | Invoking a skill |", "|---|---|---|");
+lines.push(
+  "## How each harness names things",
+  "",
+  "| Harness | An MCP tool | Invoking a skill |",
+  "|---|---|---|",
+);
 for (const harness of HARNESSES) {
-  lines.push(`| ${harness.label} | ${harness.dialect.toolRef("server", "tool")} | ${harness.dialect.skillRef("name")} |`);
+  lines.push(
+    `| ${harness.label} | ${harness.dialect.toolRef("server", "tool")} | ${harness.dialect.skillRef("name")} |`,
+  );
 }
 lines.push(
   "",
