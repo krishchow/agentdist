@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, relative, sep } from "node:path";
 import { z } from "zod";
-import type { Env } from "../harness/define";
-import { Scope } from "../schema/manifest";
+import type { Env } from "../harness/define.js";
+import { Scope } from "../schema/manifest.js";
 
 /**
  * The ledger is the engine's record of what it wrote for one package at one scope. It is the only

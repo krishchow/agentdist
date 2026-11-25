@@ -1,10 +1,10 @@
 import { resolve } from "node:path";
-import { loadPackage, PackageError } from "../ir/load";
-import { NODE_KINDS } from "../ir/nodes";
-import { PACK_TARGETS } from "../pack/index";
-import { runPack } from "../pack/run";
-import type { PackTarget } from "../pack/types";
-import { type Args, UsageError } from "./args";
+import { loadPackage, PackageError } from "../ir/load.js";
+import { NODE_KINDS } from "../ir/nodes.js";
+import { PACK_TARGETS } from "../pack/index.js";
+import { runPack } from "../pack/run.js";
+import type { PackTarget } from "../pack/types.js";
+import { type Args, UsageError } from "./args.js";
 
 /**
  * Commands for whoever maintains a package, as opposed to whoever installs it: `validate` checks

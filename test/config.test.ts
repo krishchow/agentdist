@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ConfigError, canonicalJson, editorFor } from "../src/executor/config";
+import { ConfigError, canonicalJson, editorFor } from "../src/executor/config.js";
 
 const entry = { command: "npx", args: ["-y", "demo"], env: { A: "1" } };
 

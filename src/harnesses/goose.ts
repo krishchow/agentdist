@@ -1,9 +1,9 @@
-import { defineHarness, unsupported } from "../harness/define";
-import { dialect, proseToolRef } from "../harness/dialect";
-import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../harness/locations";
-import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks";
-import { compactEntry, headerEnv, mcpConfig } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { defineHarness, unsupported } from "../harness/define.js";
+import { dialect, proseToolRef } from "../harness/dialect.js";
+import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../harness/locations.js";
+import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks.js";
+import { compactEntry, headerEnv, mcpConfig } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
 
 const home = xdgConfig("goose");
 

@@ -1,7 +1,7 @@
-import type { Handler, PlanCtx, ScopedLoc, Skip } from "../harness/define";
-import type { HttpServerNode, StdioServerNode } from "../ir/nodes";
-import { envRefs, renderEnvRefs } from "../ir/templates";
-import type { ConfigFormat, JsonValue } from "../ops/types";
+import type { Handler, PlanCtx, ScopedLoc, Skip } from "../harness/define.js";
+import type { HttpServerNode, StdioServerNode } from "../ir/nodes.js";
+import { envRefs, renderEnvRefs } from "../ir/templates.js";
+import type { ConfigFormat, JsonValue } from "../ops/types.js";
 
 export type StdioEntry = (server: StdioServerNode, ctx: PlanCtx) => JsonValue;
 export type HttpEntry = (server: HttpServerNode, ctx: PlanCtx) => JsonValue | Skip;

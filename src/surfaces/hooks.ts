@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { STATE_DIR, scopeRoot } from "../executor/ledger";
-import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
-import type { HookNode } from "../ir/nodes";
-import { renderHooksDir } from "../ir/templates";
-import type { ConfigFormat, FileOp, JsonValue, Op } from "../ops/types";
-import type { HookEvent } from "../schema/manifest";
+import { STATE_DIR, scopeRoot } from "../executor/ledger.js";
+import type { Handler, PlanCtx, ScopedLoc } from "../harness/define.js";
+import type { HookNode } from "../ir/nodes.js";
+import { renderHooksDir } from "../ir/templates.js";
+import type { ConfigFormat, FileOp, JsonValue, Op } from "../ops/types.js";
+import type { HookEvent } from "../schema/manifest.js";
 
 /** A hook as a harness needs it: its own event name, its own tool names, a runnable command. */
 export interface NativeHook {

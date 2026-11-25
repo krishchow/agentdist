@@ -1,11 +1,11 @@
-import { defineHarness, type LocCtx, unsupported } from "../harness/define";
-import { dialect, noToolGrants } from "../harness/dialect";
-import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { headerEnv, mcpConfig } from "../surfaces/mcp";
-import { sharedSkills } from "../surfaces/shared";
-import { jsonOrJsonc, opencodeEntry, opencodeHttpEntry } from "./opencode";
+import { defineHarness, type LocCtx, unsupported } from "../harness/define.js";
+import { dialect, noToolGrants } from "../harness/dialect.js";
+import { configRootExists, inConfig, xdgConfig } from "../harness/locations.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { headerEnv, mcpConfig } from "../surfaces/mcp.js";
+import { sharedSkills } from "../surfaces/shared.js";
+import { jsonOrJsonc, opencodeEntry, opencodeHttpEntry } from "./opencode.js";
 
 const home = xdgConfig("kilo", "KILO_CONFIG_DIR");
 

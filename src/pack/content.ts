@@ -1,14 +1,14 @@
 import { join, relative, sep } from "node:path";
-import type { Dialect, Env, HarnessDef } from "../harness/define";
-import { unsupported } from "../harness/define";
-import { inProject } from "../harness/locations";
-import type { Package } from "../ir/nodes";
-import { hasRefs } from "../ir/refs";
-import { planInstall } from "../ops/plan";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { skillsDir } from "../surfaces/skills";
-import type { PackFile } from "./types";
+import type { Dialect, Env, HarnessDef } from "../harness/define.js";
+import { unsupported } from "../harness/define.js";
+import { inProject } from "../harness/locations.js";
+import type { Package } from "../ir/nodes.js";
+import { hasRefs } from "../ir/refs.js";
+import { planInstall } from "../ops/plan.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { skillsDir } from "../surfaces/skills.js";
+import type { PackFile } from "./types.js";
 
 /** Whether any content needs rendering before a harness can read it. */
 export function usesRefs(pkg: Package): boolean {

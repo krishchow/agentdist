@@ -13,11 +13,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Env } from "../harness/define";
-import { displayPath } from "../ops/plan";
-import type { ConfigFormat, Diagnostic, Plan } from "../ops/types";
-import type { Scope } from "../schema/manifest";
-import { arrayAt, ConfigError, canonicalJson, editorFor } from "./config";
+import type { Env } from "../harness/define.js";
+import { displayPath } from "../ops/plan.js";
+import type { ConfigFormat, Diagnostic, Plan } from "../ops/types.js";
+import type { Scope } from "../schema/manifest.js";
+import { arrayAt, ConfigError, canonicalJson, editorFor } from "./config.js";
 import {
   fromLedgerPath,
   hashBytes,
@@ -27,7 +27,7 @@ import {
   STATE_DIR,
   scopeRoot,
   toLedgerPath,
-} from "./ledger";
+} from "./ledger.js";
 
 export type ActionType = "create" | "update" | "unchanged" | "adopt" | "remove" | "keep" | "backup";
 

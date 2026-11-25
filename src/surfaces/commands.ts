@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { stringify as stringifyToml } from "smol-toml";
-import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
-import { renderDoc } from "../ir/markdown";
-import type { CommandNode } from "../ir/nodes";
-import { frontmatter, mapBody, pipe, resolveRefs } from "../transforms/doc";
+import type { Handler, PlanCtx, ScopedLoc } from "../harness/define.js";
+import { renderDoc } from "../ir/markdown.js";
+import type { CommandNode } from "../ir/nodes.js";
+import { frontmatter, mapBody, pipe, resolveRefs } from "../transforms/doc.js";
 
 /** The canonical placeholder for everything the user typed after the command. */
 export const ARGUMENTS = "$ARGUMENTS";

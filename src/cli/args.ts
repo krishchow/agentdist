@@ -1,4 +1,4 @@
-import type { Scope } from "../schema/manifest";
+import type { Scope } from "../schema/manifest.js";
 
 export interface Args {
   command?: string;

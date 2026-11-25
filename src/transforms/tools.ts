@@ -1,4 +1,4 @@
-import type { PlanCtx } from "../harness/define";
+import type { PlanCtx } from "../harness/define.js";
 
 /**
  * Tool grants are written in the canonical dialect: Claude Code's built-in names (`Read`, `Bash`)

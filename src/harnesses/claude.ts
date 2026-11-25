@@ -1,13 +1,13 @@
 import { join } from "node:path";
-import { defineHarness } from "../harness/define";
-import { canonicalDialect } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig, inProject } from "../harness/locations";
-import { HOOK_EVENTS } from "../schema/manifest";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { skillsDir } from "../surfaces/skills";
+import { defineHarness } from "../harness/define.js";
+import { canonicalDialect } from "../harness/dialect.js";
+import { configRootExists, dotHome, inConfig, inProject } from "../harness/locations.js";
+import { HOOK_EVENTS } from "../schema/manifest.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { claudeStyleHook, hooksConfig } from "../surfaces/hooks.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { skillsDir } from "../surfaces/skills.js";
 
 const home = dotHome(".claude", "CLAUDE_CONFIG_DIR");
 

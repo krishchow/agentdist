@@ -1,13 +1,13 @@
-import { defineHarness, type Skip, unsupported } from "../harness/define";
-import { dialect, noToolGrants } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig } from "../harness/locations";
-import type { HttpServerNode, McpServerNode, StdioServerNode } from "../ir/nodes";
-import { envRefs } from "../ir/templates";
-import type { JsonValue } from "../ops/types";
-import { tomlAgents } from "../surfaces/agents";
-import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
-import { compactEntry, mcpConfig } from "../surfaces/mcp";
-import { sharedSkills } from "../surfaces/shared";
+import { defineHarness, type Skip, unsupported } from "../harness/define.js";
+import { dialect, noToolGrants } from "../harness/dialect.js";
+import { configRootExists, dotHome, inConfig } from "../harness/locations.js";
+import type { HttpServerNode, McpServerNode, StdioServerNode } from "../ir/nodes.js";
+import { envRefs } from "../ir/templates.js";
+import type { JsonValue } from "../ops/types.js";
+import { tomlAgents } from "../surfaces/agents.js";
+import { claudeStyleHook, hooksConfig } from "../surfaces/hooks.js";
+import { compactEntry, mcpConfig } from "../surfaces/mcp.js";
+import { sharedSkills } from "../surfaces/shared.js";
 
 const home = dotHome(".codex", "CODEX_HOME");
 

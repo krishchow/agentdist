@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { dialect } from "../harness/dialect";
-import type { Package } from "../ir/nodes";
-import { renderHooksDir } from "../ir/templates";
-import type { JsonValue } from "../ops/types";
-import { claudeStyleHook } from "../surfaces/hooks";
-import { compactEntry, entryHeaders } from "../surfaces/mcp";
-import { pluginContent } from "./content";
-import { json, type PackTarget } from "./types";
+import { dialect } from "../harness/dialect.js";
+import type { Package } from "../ir/nodes.js";
+import { renderHooksDir } from "../ir/templates.js";
+import type { JsonValue } from "../ops/types.js";
+import { claudeStyleHook } from "../surfaces/hooks.js";
+import { compactEntry, entryHeaders } from "../surfaces/mcp.js";
+import { pluginContent } from "./content.js";
+import { json, type PackTarget } from "./types.js";
 
 const Options = z.strictObject({
   /** Also write `.claude-plugin/marketplace.json`, making the repository its own marketplace. */

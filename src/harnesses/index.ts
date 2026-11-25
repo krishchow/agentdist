@@ -1,19 +1,19 @@
-import type { HarnessDef } from "../harness/define";
-import { amp } from "./amp";
-import { claude } from "./claude";
-import { cline } from "./cline";
-import { codex } from "./codex";
-import { copilot } from "./copilot";
-import { cursor } from "./cursor";
-import { devin } from "./devin";
-import { factory } from "./factory";
-import { gemini } from "./gemini";
-import { goose } from "./goose";
-import { kilo } from "./kilo";
-import { opencode } from "./opencode";
-import { pi } from "./pi";
-import { qwen } from "./qwen";
-import { zed } from "./zed";
+import type { HarnessDef } from "../harness/define.js";
+import { amp } from "./amp.js";
+import { claude } from "./claude.js";
+import { cline } from "./cline.js";
+import { codex } from "./codex.js";
+import { copilot } from "./copilot.js";
+import { cursor } from "./cursor.js";
+import { devin } from "./devin.js";
+import { factory } from "./factory.js";
+import { gemini } from "./gemini.js";
+import { goose } from "./goose.js";
+import { kilo } from "./kilo.js";
+import { opencode } from "./opencode.js";
+import { pi } from "./pi.js";
+import { qwen } from "./qwen.js";
+import { zed } from "./zed.js";
 
 /** Every harness the engine can install into, in the order prompts list them. */
 export const HARNESSES: HarnessDef[] = [

@@ -1,20 +1,20 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { install, missingEnv, status, uninstall } from "../src/api";
-import { defineHarness, unsupported } from "../src/harness/define";
-import { dialect } from "../src/harness/dialect";
-import { dotHome, inConfig, inHome, inProject } from "../src/harness/locations";
-import { claude } from "../src/harnesses/claude";
-import { codex } from "../src/harnesses/codex";
-import { cursor } from "../src/harnesses/cursor";
-import { gemini } from "../src/harnesses/gemini";
-import { zed } from "../src/harnesses/zed";
-import type { Package } from "../src/ir/nodes";
-import { markdownAgents } from "../src/surfaces/agents";
-import { httpEntry, mcpConfig, stdioEntry } from "../src/surfaces/mcp";
-import { skillsDir } from "../src/surfaces/skills";
-import { demo, read, sandbox } from "./helpers";
+import { install, missingEnv, status, uninstall } from "../src/api.js";
+import { defineHarness, unsupported } from "../src/harness/define.js";
+import { dialect } from "../src/harness/dialect.js";
+import { dotHome, inConfig, inHome, inProject } from "../src/harness/locations.js";
+import { claude } from "../src/harnesses/claude.js";
+import { codex } from "../src/harnesses/codex.js";
+import { cursor } from "../src/harnesses/cursor.js";
+import { gemini } from "../src/harnesses/gemini.js";
+import { zed } from "../src/harnesses/zed.js";
+import type { Package } from "../src/ir/nodes.js";
+import { markdownAgents } from "../src/surfaces/agents.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../src/surfaces/mcp.js";
+import { skillsDir } from "../src/surfaces/skills.js";
+import { demo, read, sandbox } from "./helpers.js";
 
 const types = (result: { actions: Array<{ type: string }> }) =>
   [...new Set(result.actions.map((a) => a.type))].sort();

@@ -1,16 +1,16 @@
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import packageJson from "../package.json";
-import { type ApplyResult, applyInstall, applyUninstall } from "./executor/apply";
-import { type Ledger, readLedger } from "./executor/ledger";
-import type { Env, HarnessDef } from "./harness/define";
-import { HARNESSES } from "./harnesses/index";
-import { NODE_KINDS, type NodeKind, type Package } from "./ir/nodes";
-import { planInstall } from "./ops/plan";
-import type { Plan } from "./ops/types";
-import { SCOPES, type Scope } from "./schema/manifest";
-import { headerEnv } from "./surfaces/mcp";
+import packageJson from "../package.json" with { type: "json" };
+import { type ApplyResult, applyInstall, applyUninstall } from "./executor/apply.js";
+import { type Ledger, readLedger } from "./executor/ledger.js";
+import type { Env, HarnessDef } from "./harness/define.js";
+import { HARNESSES } from "./harnesses/index.js";
+import { NODE_KINDS, type NodeKind, type Package } from "./ir/nodes.js";
+import { planInstall } from "./ops/plan.js";
+import type { Plan } from "./ops/types.js";
+import { SCOPES, type Scope } from "./schema/manifest.js";
+import { headerEnv } from "./surfaces/mcp.js";
 
 /** Annotated so the published type declarations do not reach for package.json. */
 export const ENGINE_VERSION: string = packageJson.version;

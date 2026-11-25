@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Env } from "../src/harness/define";
-import { loadPackage } from "../src/ir/load";
+import type { Env } from "../src/harness/define.js";
+import { loadPackage } from "../src/ir/load.js";
 
 export const FIXTURE = join(__dirname, "fixtures", "demo");
 export const demo = () => loadPackage(FIXTURE);

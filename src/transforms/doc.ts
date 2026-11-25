@@ -1,5 +1,5 @@
-import type { PlanCtx } from "../harness/define";
-import type { Doc } from "../ir/markdown";
+import type { PlanCtx } from "../harness/define.js";
+import type { Doc } from "../ir/markdown.js";
 
 /**
  * Content conversion is a chain of small passes over a parsed markdown file. A surface composes

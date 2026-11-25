@@ -19,11 +19,11 @@ export {
   status,
   type UninstallRequest,
   uninstall,
-} from "./api";
-export { runAuthorCommand } from "./cli/author";
-export { type CliOptions, runCli } from "./cli/run";
-export type { Action, ApplyResult, Conflict } from "./executor/apply";
-export type { Ledger } from "./executor/ledger";
+} from "./api.js";
+export { runAuthorCommand } from "./cli/author.js";
+export { type CliOptions, runCli } from "./cli/run.js";
+export type { Action, ApplyResult, Conflict } from "./executor/apply.js";
+export type { Ledger } from "./executor/ledger.js";
 export {
   byScope,
   type Dialect,
@@ -35,7 +35,7 @@ export {
   type PlanCtx,
   type ScopedLoc,
   unsupported,
-} from "./harness/define";
+} from "./harness/define.js";
 export {
   canonicalDialect,
   dialect,
@@ -43,18 +43,26 @@ export {
   portableDialect,
   proseSkillRef,
   proseToolRef,
-} from "./harness/dialect";
-export { configRootExists, dotHome, inConfig, inHome, inProject, xdgConfig } from "./harness/locations";
-export { findHarness, HARNESSES } from "./harnesses/index";
-export { loadPackage, PackageError } from "./ir/load";
-export type { AgentNode, CommandNode, McpServerNode, Node, NodeKind, Package, SkillNode } from "./ir/nodes";
-export { installedName } from "./ir/nodes";
-export { planInstall } from "./ops/plan";
-export type { ConfigOp, Diagnostic, FileOp, Op, Plan } from "./ops/types";
-export { PACK_TARGETS } from "./pack/index";
-export { runPack } from "./pack/run";
-export type { PackOutput, PackTarget } from "./pack/types";
-export { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "./schema/content";
+} from "./harness/dialect.js";
+export { configRootExists, dotHome, inConfig, inHome, inProject, xdgConfig } from "./harness/locations.js";
+export { findHarness, HARNESSES } from "./harnesses/index.js";
+export { loadPackage, PackageError } from "./ir/load.js";
+export type {
+  AgentNode,
+  CommandNode,
+  McpServerNode,
+  Node,
+  NodeKind,
+  Package,
+  SkillNode,
+} from "./ir/nodes.js";
+export { installedName } from "./ir/nodes.js";
+export { planInstall } from "./ops/plan.js";
+export type { ConfigOp, Diagnostic, FileOp, Op, Plan } from "./ops/types.js";
+export { PACK_TARGETS } from "./pack/index.js";
+export { runPack } from "./pack/run.js";
+export type { PackOutput, PackTarget } from "./pack/types.js";
+export { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "./schema/content.js";
 export {
   AgentDist,
   type AgentDistInput,
@@ -63,9 +71,9 @@ export {
   McpServer,
   SCOPES,
   Scope,
-} from "./schema/manifest";
-export { markdownAgents, tomlAgents } from "./surfaces/agents";
-export { markdownCommands, tomlCommands } from "./surfaces/commands";
-export { mcpConfig, stdioEntry } from "./surfaces/mcp";
-export { AGENTS_SKILLS, CLAUDE_SKILLS, sharedSkills } from "./surfaces/shared";
-export { skillsDir } from "./surfaces/skills";
+} from "./schema/manifest.js";
+export { markdownAgents, tomlAgents } from "./surfaces/agents.js";
+export { markdownCommands, tomlCommands } from "./surfaces/commands.js";
+export { mcpConfig, stdioEntry } from "./surfaces/mcp.js";
+export { AGENTS_SKILLS, CLAUDE_SKILLS, sharedSkills } from "./surfaces/shared.js";
+export { skillsDir } from "./surfaces/skills.js";

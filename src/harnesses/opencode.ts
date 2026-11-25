@@ -1,14 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "jsonc-parser";
-import { defineHarness, type LocCtx, type PlanCtx, unsupported } from "../harness/define";
-import { dialect, noToolGrants, proseSkillRef } from "../harness/dialect";
-import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import type { StdioServerNode } from "../ir/nodes";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { compactEntry, httpEntry, mcpConfig } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { defineHarness, type LocCtx, type PlanCtx, unsupported } from "../harness/define.js";
+import { dialect, noToolGrants, proseSkillRef } from "../harness/dialect.js";
+import { configRootExists, inConfig, xdgConfig } from "../harness/locations.js";
+import type { StdioServerNode } from "../ir/nodes.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { compactEntry, httpEntry, mcpConfig } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
 
 /** `<dir>/<base>.jsonc` if the user keeps one, otherwise `<dir>/<base>.json`. */
 export function jsonOrJsonc(dir: string, base: string): string {

@@ -1,11 +1,11 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseArgs, UsageError } from "../src/cli/args";
-import { runCli } from "../src/cli/run";
-import type { Env } from "../src/harness/define";
-import { claude } from "../src/harnesses/claude";
-import { FIXTURE, read, sandbox } from "./helpers";
+import { parseArgs, UsageError } from "../src/cli/args.js";
+import { runCli } from "../src/cli/run.js";
+import type { Env } from "../src/harness/define.js";
+import { claude } from "../src/harnesses/claude.js";
+import { FIXTURE, read, sandbox } from "./helpers.js";
 
 async function cli(env: Env, ...argv: string[]) {
   let out = "";

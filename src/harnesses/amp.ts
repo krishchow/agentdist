@@ -1,9 +1,9 @@
-import { defineHarness, type LocCtx, unsupported } from "../harness/define";
-import { dialect, proseSkillRef, proseToolRef } from "../harness/dialect";
-import { configRootExists, xdgConfig } from "../harness/locations";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
-import { jsonOrJsonc } from "./opencode";
+import { defineHarness, type LocCtx, unsupported } from "../harness/define.js";
+import { dialect, proseSkillRef, proseToolRef } from "../harness/dialect.js";
+import { configRootExists, xdgConfig } from "../harness/locations.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
+import { jsonOrJsonc } from "./opencode.js";
 
 const home = xdgConfig("amp");
 

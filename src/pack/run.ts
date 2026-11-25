@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
-import type { Package } from "../ir/nodes";
-import type { PackTarget } from "./types";
+import type { Package } from "../ir/nodes.js";
+import type { PackTarget } from "./types.js";
 
 export interface PackChange {
   path: string;

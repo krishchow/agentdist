@@ -1,6 +1,6 @@
-import { parseArgs, UsageError } from "./args";
-import { runAuthorCommand } from "./author";
-import { runCli } from "./run";
+import { parseArgs, UsageError } from "./args.js";
+import { runAuthorCommand } from "./author.js";
+import { runCli } from "./run.js";
 
 const AUTHOR_HELP = [
   "",

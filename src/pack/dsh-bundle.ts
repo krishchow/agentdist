@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
-import type { StdioServerNode } from "../ir/nodes";
-import type { PackTarget } from "./types";
+import type { StdioServerNode } from "../ir/nodes.js";
+import type { PackTarget } from "./types.js";
 
 const Options = z.strictObject({
   /** The patch file, which `dsh.bundle.patch` in package.json must point at. */
