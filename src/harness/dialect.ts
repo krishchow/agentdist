@@ -1,4 +1,4 @@
-import type { Dialect } from "./define";
+import type { Dialect } from "./define.js";
 
 /** The canonical built-in tool names. Content and tool grants are written with these. */
 export const CANONICAL_TOOLS = [

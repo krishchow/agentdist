@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { compactEntry, headerEnv } from "../surfaces/mcp";
-import { usesRefs } from "./content";
-import { json, type PackTarget } from "./types";
+import { compactEntry, headerEnv } from "../surfaces/mcp.js";
+import { usesRefs } from "./content.js";
+import { json, type PackTarget } from "./types.js";
 
 const SPEC = "https://agent-plugins.org/schemas/1.0.0";
 

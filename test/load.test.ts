@@ -2,9 +2,9 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadPackage, PackageError } from "../src/ir/load";
-import { installedName } from "../src/ir/nodes";
-import { demo, FIXTURE } from "./helpers";
+import { loadPackage, PackageError } from "../src/ir/load.js";
+import { installedName } from "../src/ir/nodes.js";
+import { demo, FIXTURE } from "./helpers.js";
 
 const copy = () => {
   const dir = mkdtempSync(join(tmpdir(), "agentdist-pkg-"));

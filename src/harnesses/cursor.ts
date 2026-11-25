@@ -1,11 +1,11 @@
-import { defineHarness } from "../harness/define";
-import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig } from "../harness/locations";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { CLAUDE_HOOKS, hooksConfig } from "../surfaces/hooks";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { defineHarness } from "../harness/define.js";
+import { dialect, noToolGrants, proseToolRef } from "../harness/dialect.js";
+import { configRootExists, dotHome, inConfig } from "../harness/locations.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { CLAUDE_HOOKS, hooksConfig } from "../surfaces/hooks.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
 
 const home = dotHome(".cursor");
 

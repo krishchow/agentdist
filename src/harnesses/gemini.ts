@@ -1,12 +1,12 @@
 import { join } from "node:path";
-import { defineHarness, type Env } from "../harness/define";
-import { dialect, proseSkillRef } from "../harness/dialect";
-import { configRootExists, inConfig } from "../harness/locations";
-import { markdownAgents } from "../surfaces/agents";
-import { tomlCommands } from "../surfaces/commands";
-import { hooksConfig } from "../surfaces/hooks";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { sharedSkills } from "../surfaces/shared";
+import { defineHarness, type Env } from "../harness/define.js";
+import { dialect, proseSkillRef } from "../harness/dialect.js";
+import { configRootExists, inConfig } from "../harness/locations.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { tomlCommands } from "../surfaces/commands.js";
+import { hooksConfig } from "../surfaces/hooks.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { sharedSkills } from "../surfaces/shared.js";
 
 // GEMINI_CLI_HOME replaces the home directory itself, not the .gemini directory inside it.
 const home = (env: Env) => join(env.vars.GEMINI_CLI_HOME || env.home, ".gemini");

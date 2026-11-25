@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import type { Env, Loc } from "./define";
+import type { Env, Loc } from "./define.js";
 
 /** `~/<dir>`, unless one of `envVars` relocates it. */
 export function dotHome(dir: string, ...envVars: string[]): (env: Env) => string {

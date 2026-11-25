@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
-import { portableDialect } from "../harness/dialect";
-import { renderDoc } from "../ir/markdown";
-import type { SkillNode } from "../ir/nodes";
-import type { Op } from "../ops/types";
-import { pipe, resolveRefs, setFields, type Transform } from "../transforms/doc";
+import type { Handler, PlanCtx, ScopedLoc } from "../harness/define.js";
+import { portableDialect } from "../harness/dialect.js";
+import { renderDoc } from "../ir/markdown.js";
+import type { SkillNode } from "../ir/nodes.js";
+import type { Op } from "../ops/types.js";
+import { pipe, resolveRefs, setFields, type Transform } from "../transforms/doc.js";
 
 export interface SkillsDirOptions {
   /**

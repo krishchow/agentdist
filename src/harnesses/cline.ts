@@ -1,11 +1,11 @@
 import { join } from "node:path";
-import { byScope, defineHarness, type LocCtx, unsupported } from "../harness/define";
-import { dialect, proseToolRef } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig } from "../harness/locations";
-import { markdownCommands } from "../surfaces/commands";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
-import { skillsDir } from "../surfaces/skills";
+import { byScope, defineHarness, type LocCtx, unsupported } from "../harness/define.js";
+import { dialect, proseToolRef } from "../harness/dialect.js";
+import { configRootExists, dotHome, inConfig } from "../harness/locations.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
+import { skillsDir } from "../surfaces/skills.js";
 
 const home = dotHome(".cline", "CLINE_DIR");
 

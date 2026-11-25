@@ -1,10 +1,10 @@
 import { join } from "node:path";
 import { stringify as stringifyToml } from "smol-toml";
-import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
-import { renderDoc } from "../ir/markdown";
-import type { AgentNode } from "../ir/nodes";
-import { frontmatter, pipe, resolveRefs } from "../transforms/doc";
-import { mapToolGrants } from "../transforms/tools";
+import type { Handler, PlanCtx, ScopedLoc } from "../harness/define.js";
+import { renderDoc } from "../ir/markdown.js";
+import type { AgentNode } from "../ir/nodes.js";
+import { frontmatter, pipe, resolveRefs } from "../transforms/doc.js";
+import { mapToolGrants } from "../transforms/tools.js";
 
 export interface MarkdownAgentsOptions {
   /** File extension including the dot. Copilot uses `.agent.md`. */

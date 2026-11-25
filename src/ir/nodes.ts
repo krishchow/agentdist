@@ -1,5 +1,5 @@
-import type { AgentDist, Hook, HttpServer, StdioServer } from "../schema/manifest";
-import type { Doc } from "./markdown";
+import type { AgentDist, Hook, HttpServer, StdioServer } from "../schema/manifest.js";
+import type { Doc } from "./markdown.js";
 
 /**
  * The intermediate representation: what a package is, with nothing about any harness in it.

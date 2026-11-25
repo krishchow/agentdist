@@ -1,8 +1,8 @@
-import { defineHarness, unsupported } from "../harness/define";
-import { dialect } from "../harness/dialect";
-import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { sharedSkills } from "../surfaces/shared";
+import { defineHarness, unsupported } from "../harness/define.js";
+import { dialect } from "../harness/dialect.js";
+import { configRootExists, inConfig, xdgConfig } from "../harness/locations.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { sharedSkills } from "../surfaces/shared.js";
 
 const home = xdgConfig("zed");
 

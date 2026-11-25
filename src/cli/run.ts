@@ -9,15 +9,15 @@ import {
   realEnv,
   status,
   uninstall,
-} from "../api";
-import type { Action, ApplyResult } from "../executor/apply";
-import type { Env, HarnessDef } from "../harness/define";
-import { HARNESSES } from "../harnesses/index";
-import { loadPackage, PackageError } from "../ir/load";
-import { installedName, type NodeKind, type Package } from "../ir/nodes";
-import { configRootOf, displayPath } from "../ops/plan";
-import { SCOPES, type Scope } from "../schema/manifest";
-import { type Args, parseArgs, UsageError } from "./args";
+} from "../api.js";
+import type { Action, ApplyResult } from "../executor/apply.js";
+import type { Env, HarnessDef } from "../harness/define.js";
+import { HARNESSES } from "../harnesses/index.js";
+import { loadPackage, PackageError } from "../ir/load.js";
+import { installedName, type NodeKind, type Package } from "../ir/nodes.js";
+import { configRootOf, displayPath } from "../ops/plan.js";
+import { SCOPES, type Scope } from "../schema/manifest.js";
+import { type Args, parseArgs, UsageError } from "./args.js";
 
 export interface CliOptions {
   /** Directory holding the package's `agentdist.json`. */

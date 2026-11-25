@@ -1,4 +1,4 @@
-import type { Package } from "../ir/nodes";
+import type { Package } from "../ir/nodes.js";
 
 export interface PackFile {
   /** Path relative to the package root, with forward slashes. */

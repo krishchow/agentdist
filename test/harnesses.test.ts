@@ -1,11 +1,11 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Env } from "../src/harness/define";
-import { HARNESSES } from "../src/harnesses/index";
-import { NODE_KINDS } from "../src/ir/nodes";
-import { displayPath, planInstall } from "../src/ops/plan";
-import { SCOPES, type Scope } from "../src/schema/manifest";
-import { demo } from "./helpers";
+import type { Env } from "../src/harness/define.js";
+import { HARNESSES } from "../src/harnesses/index.js";
+import { NODE_KINDS } from "../src/ir/nodes.js";
+import { displayPath, planInstall } from "../src/ops/plan.js";
+import { SCOPES, type Scope } from "../src/schema/manifest.js";
+import { demo } from "./helpers.js";
 
 // A fixed, fictional machine, so the golden files do not depend on where the tests run.
 const env: Env = { home: "/home/u", projectRoot: "/home/u/repo", vars: {}, platform: "linux" };

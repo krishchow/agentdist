@@ -56,10 +56,11 @@
     "build": "tsup && tsc -p tsconfig.build.json && node scripts/gen-schema.mjs && node scripts/gen-harness-table.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "check:types": "node scripts/check-consumer-types.mjs",
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run check:types && pnpm test",
     "prepublishOnly": "pnpm run check"
   },
   "dependencies": {

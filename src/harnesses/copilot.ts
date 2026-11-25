@@ -1,10 +1,10 @@
-import { defineHarness, unsupported } from "../harness/define";
-import { CANONICAL_TOOLS, dialect } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig } from "../harness/locations";
-import { markdownAgents } from "../surfaces/agents";
-import { hooksDir } from "../surfaces/hooks";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { skillsDir } from "../surfaces/skills";
+import { defineHarness, unsupported } from "../harness/define.js";
+import { CANONICAL_TOOLS, dialect } from "../harness/dialect.js";
+import { configRootExists, dotHome, inConfig } from "../harness/locations.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { hooksDir } from "../surfaces/hooks.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { skillsDir } from "../surfaces/skills.js";
 
 const home = dotHome(".copilot", "COPILOT_HOME");
 

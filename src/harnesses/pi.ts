@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { defineHarness, type Env, unsupported } from "../harness/define";
-import { dialect } from "../harness/dialect";
-import { configRootExists, inConfig, inProject } from "../harness/locations";
-import { markdownCommands } from "../surfaces/commands";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { sharedSkills } from "../surfaces/shared";
+import { defineHarness, type Env, unsupported } from "../harness/define.js";
+import { dialect } from "../harness/dialect.js";
+import { configRootExists, inConfig, inProject } from "../harness/locations.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { sharedSkills } from "../surfaces/shared.js";
 
 const home = (env: Env) => env.vars.PI_CODING_AGENT_DIR || join(env.home, ".pi", "agent");
 

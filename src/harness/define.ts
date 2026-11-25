@@ -1,7 +1,7 @@
-import type { NodeKind, NodeOf, Package } from "../ir/nodes";
-import type { Ref } from "../ir/refs";
-import type { Op } from "../ops/types";
-import type { Scope } from "../schema/manifest";
+import type { NodeKind, NodeOf, Package } from "../ir/nodes.js";
+import type { Ref } from "../ir/refs.js";
+import type { Op } from "../ops/types.js";
+import type { Scope } from "../schema/manifest.js";
 
 /** Everything about the machine a plan depends on, injected so planning is a pure function. */
 export interface Env {

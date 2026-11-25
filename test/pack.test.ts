@@ -2,10 +2,10 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadPackage } from "../src/ir/load";
-import { PACK_TARGETS } from "../src/pack/index";
-import { runPack } from "../src/pack/run";
-import { FIXTURE } from "./helpers";
+import { loadPackage } from "../src/ir/load.js";
+import { PACK_TARGETS } from "../src/pack/index.js";
+import { runPack } from "../src/pack/run.js";
+import { FIXTURE } from "./helpers.js";
 
 function fixture(pack: Record<string, unknown>, strip = false) {
   const dir = mkdtempSync(join(tmpdir(), "agentdist-pack-"));

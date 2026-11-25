@@ -1,11 +1,11 @@
-import { defineHarness } from "../harness/define";
-import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
-import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
-import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
-import { anchored, CLAUDE_HOOKS, claudeStyleHook, hooksConfig } from "../surfaces/hooks";
-import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { defineHarness } from "../harness/define.js";
+import { dialect, noToolGrants, proseToolRef } from "../harness/dialect.js";
+import { configRootExists, inConfig, xdgConfig } from "../harness/locations.js";
+import { markdownAgents } from "../surfaces/agents.js";
+import { markdownCommands } from "../surfaces/commands.js";
+import { anchored, CLAUDE_HOOKS, claudeStyleHook, hooksConfig } from "../surfaces/hooks.js";
+import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp.js";
+import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared.js";
 
 const home = xdgConfig("devin");
 

@@ -1,8 +1,8 @@
 import { isAbsolute, join, relative, sep } from "node:path";
-import type { Dialect, Env, HarnessDef, PlanCtx, Skip } from "../harness/define";
-import { installedName, type Node, nodeId, type Package } from "../ir/nodes";
-import { type Ref, replaceRefs } from "../ir/refs";
-import type { Scope } from "../schema/manifest";
+import type { Dialect, Env, HarnessDef, PlanCtx, Skip } from "../harness/define.js";
+import { installedName, type Node, nodeId, type Package } from "../ir/nodes.js";
+import { type Ref, replaceRefs } from "../ir/refs.js";
+import type { Scope } from "../schema/manifest.js";
 import {
   type Claim,
   type ConfigItemOp,
@@ -14,7 +14,7 @@ import {
   type PlannedConfig,
   type PlannedFile,
   type PlannedItem,
-} from "./types";
+} from "./types.js";
 
 export function configRootOf(harness: HarnessDef, scope: Scope, env: Env): string {
   return scope === "user" ? harness.configRoot.user(env) : join(env.projectRoot, harness.configRoot.local);

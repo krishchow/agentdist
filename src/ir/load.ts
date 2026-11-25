@@ -1,12 +1,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import type { z } from "zod";
-import { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "../schema/content";
-import { AgentDist, MANIFEST_FILE } from "../schema/manifest";
-import { parseDoc } from "./markdown";
-import type { AgentNode, CommandNode, Node, Package, SkillFile, SkillNode } from "./nodes";
-import { findRefs } from "./refs";
-import { usesHooksDir } from "./templates";
+import { AgentFrontmatter, CommandFrontmatter, SkillFrontmatter } from "../schema/content.js";
+import { AgentDist, MANIFEST_FILE } from "../schema/manifest.js";
+import { parseDoc } from "./markdown.js";
+import type { AgentNode, CommandNode, Node, Package, SkillFile, SkillNode } from "./nodes.js";
+import { findRefs } from "./refs.js";
+import { usesHooksDir } from "./templates.js";
 
 /** Every problem found in a package, reported together instead of one per run. */
 export class PackageError extends Error {

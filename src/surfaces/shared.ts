@@ -1,6 +1,6 @@
-import type { Handler, ScopedLoc } from "../harness/define";
-import { inHome, inProject } from "../harness/locations";
-import { type SkillsDirOptions, skillsDir } from "./skills";
+import type { Handler, ScopedLoc } from "../harness/define.js";
+import { inHome, inProject } from "../harness/locations.js";
+import { type SkillsDirOptions, skillsDir } from "./skills.js";
 
 /**
  * The cross-harness Agent Skills directory. Harnesses that read it share one copy of each skill:

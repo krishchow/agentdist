@@ -10,7 +10,7 @@ import {
 } from "jsonc-parser";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import { parseDocument } from "yaml";
-import type { ConfigFormat, JsonValue } from "../ops/types";
+import type { ConfigFormat, JsonValue } from "../ops/types.js";
 
 /**
  * Surgical edits of config files the user owns. Each editor changes one key and leaves every

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { dialect, proseToolRef } from "../harness/dialect";
-import { codexMcpEntry } from "../harnesses/codex";
-import { pluginContent } from "./content";
-import { json, type PackTarget } from "./types";
+import { dialect, proseToolRef } from "../harness/dialect.js";
+import { codexMcpEntry } from "../harnesses/codex.js";
+import { pluginContent } from "./content.js";
+import { json, type PackTarget } from "./types.js";
 
 const Options = z.strictObject({
   /**
