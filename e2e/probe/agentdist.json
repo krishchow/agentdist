@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schema/agentdist.schema.json",
+  "engine": "v1",
+  "name": "probe",
+  "version": "0.0.1",
+  "description": "The end-to-end test package: one of everything, each carrying a canary string the checks look for.",
+  "skills": "./skills",
+  "agents": "./agents",
+  "commands": "./commands",
+  "mcpServers": {
+    "probe": {
+      "command": "mcp-probe",
+      "env": { "PROBE_STATIC": "from-manifest" },
+      "envPassthrough": ["PROBE_PASSTHROUGH"],
+      "startupTimeoutSec": 30,
+      "toolTimeoutSec": 30
+    },
+    "probe-remote": {
+      "transport": "http",
+      "url": "http://127.0.0.1:4020/mcp",
+      "headers": {
+        "Authorization": "Bearer {{env:PROBE_HTTP_TOKEN}}",
+        "X-Client": "probe"
+      }
+    }
+  },
+  "hooks": {
+    "session-start": { "event": "SessionStart", "command": "node {{hooks_dir}}/record.mjs SessionStart" },
+    "prompt": { "event": "UserPromptSubmit", "command": "node {{hooks_dir}}/record.mjs UserPromptSubmit" },
+    "pre-bash": {
+      "event": "PreToolUse",
+      "matcher": ["Bash"],
+      "command": "node {{hooks_dir}}/record.mjs PreToolUse",
+      "timeoutSec": 10
+    },
+    "post-bash": {
+      "event": "PostToolUse",
+      "matcher": ["Bash"],
+      "command": "node {{hooks_dir}}/record.mjs PostToolUse"
+    },
+    "stop": { "event": "Stop", "command": "node {{hooks_dir}}/record.mjs Stop" },
+    "session-end": { "event": "SessionEnd", "command": "node {{hooks_dir}}/record.mjs SessionEnd" }
+  },
+  "hooksDir": "./hooks",
+  "environment": {
+    "PROBE_HTTP_TOKEN": { "description": "Sent to the HTTP MCP server, which records it.", "required": true },
+    "PROBE_PASSTHROUGH": { "description": "Passed through to the stdio MCP server, which records it." }
+  }
+}

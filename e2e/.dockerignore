@@ -1,0 +1,2 @@
+# The build needs nothing from e2e/: everything is mounted at run time.
+*

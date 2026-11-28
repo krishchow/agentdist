@@ -59,6 +59,7 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
+    "e2e": "bash e2e/run.sh",
     "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm test",
     "prepublishOnly": "pnpm run check"
   },
