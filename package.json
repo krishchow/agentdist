@@ -43,12 +43,14 @@
     "schema",
     "docs",
     "!docs/research",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
   "engines": {
     "node": ">=20"
   },
+  "packageManager": "pnpm@12.18.0",
   "publishConfig": {
     "access": "public"
   },
@@ -72,6 +74,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.8",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^26.6.6",
     "tsup": "^9.0.0",
     "typescript": "^7.0.2",
