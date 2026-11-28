@@ -60,13 +60,9 @@ export function createdContainers(
  * goes when the entry goes. A container with anything of the user's in it stays.
  */
 export function pruneEmpty(editor: ConfigEditor, text: string, containers: string[][]): string {
-  const seen = new Set<string>();
-  const unique = containers.filter((c) => {
-    const key = c.join("\u0000");
-    return seen.has(key) ? false : (seen.add(key), true);
-  });
+  const unique = new Map(containers.map((c) => [c.join("\u0000"), c]));
   let next = text;
-  for (const keyPath of unique.sort((a, b) => b.length - a.length)) {
+  for (const keyPath of [...unique.values()].sort((a, b) => b.length - a.length)) {
     const value = editor.get(next, keyPath);
     const empty = Array.isArray(value)
       ? value.length === 0
