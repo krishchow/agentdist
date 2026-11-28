@@ -53,7 +53,7 @@ path was checked against, are in the harness's file.
 | Claude Code | mcp__server__tool | /name |
 | Codex | mcp__server__tool | $name |
 | Cursor | `tool` (server MCP tool) | /name |
-| GitHub Copilot | server/tool | /name |
+| GitHub Copilot | server-tool | /name |
 | Gemini CLI | mcp_server_tool | the `name` skill |
 | OpenCode | server_tool | the `name` skill |
 | Factory Droid | `tool` (server MCP tool) | /name |

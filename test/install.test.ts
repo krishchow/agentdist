@@ -217,6 +217,37 @@ describe("ownership", () => {
     expect(status("demo", env)).toEqual({});
   });
 
+  it("gives the user's own config file back byte for byte on uninstall", () => {
+    const env = sandbox({ DEMO_API_TOKEN: "t" });
+    const files = {
+      // Gemini: MCP servers and hooks in one settings file, written before the install.
+      ".gemini/settings.json": `{\n  "security": { "auth": { "selectedType": "gemini-api-key" } }\n}\n`,
+      // Zed: JSONC with a comment.
+      ".config/zed/settings.json": `// mine\n{\n  "theme": "One Dark"\n}\n`,
+    };
+    for (const [path, content] of Object.entries(files)) {
+      mkdirSync(dirname(join(env.home, path)), { recursive: true });
+      writeFileSync(join(env.home, path), content);
+    }
+    install({ pkg: demo(), harnesses: [gemini, zed], scope: "user", env });
+    expect(JSON.parse(read(env.home, ".gemini/settings.json")).hooks).toBeDefined();
+    uninstall({ pkgName: "demo", scope: "user", env });
+    for (const [path, content] of Object.entries(files)) expect(read(env.home, path)).toBe(content);
+  });
+
+  it("keeps a container it created once the user has put something of theirs in it", () => {
+    const env = sandbox({ DEMO_API_TOKEN: "t" });
+    mkdirSync(join(env.home, ".gemini"));
+    writeFileSync(join(env.home, ".gemini/settings.json"), "{}\n");
+    install({ pkg: demo(), harnesses: [gemini], scope: "user", env });
+    const file = join(env.home, ".gemini/settings.json");
+    const config = JSON.parse(read(file));
+    config.mcpServers.mine = { command: "mine" };
+    writeFileSync(file, JSON.stringify(config, null, 2));
+    uninstall({ pkgName: "demo", scope: "user", env });
+    expect(JSON.parse(read(file))).toEqual({ mcpServers: { mine: { command: "mine" } } });
+  });
+
   it("rolls every write back when one fails", () => {
     const env = sandbox();
     install({ pkg: demo(), harnesses: [claude], scope: "user", env });

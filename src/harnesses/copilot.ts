@@ -18,7 +18,9 @@ export const copilot = defineHarness({
   configRoot: { user: home, local: ".github" },
   detect: configRootExists(home),
   dialect: dialect({
-    toolRef: (server, tool) => `${server}/${tool}`,
+    // The model is offered an MCP tool as `<server>-<tool>`; `<server>/<tool>` is only how a custom
+    // agent's `tools` list and permissions name it, which is mcpGrant below.
+    toolRef: (server, tool) => `${server}-${tool}`,
     tools: {
       Read: "read",
       Write: "edit",

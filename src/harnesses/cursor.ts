@@ -25,7 +25,10 @@ export const cursor = defineHarness({
       file: { user: inConfig("mcp.json"), local: inConfig("mcp.json") },
       format: "json",
       keyPath: ["mcpServers"],
-      stdio: stdioEntry({ type: "stdio" }),
+      // A server gets little more than PATH from the CLI, so each variable it needs is referenced.
+      // Not the documented `${env:NAME}`: when NAME is unset the server gets that text literally.
+      // `${NAME:-}` gives it an empty value instead (checked in the e2e image, CLI 2026.11.22).
+      stdio: stdioEntry({ type: "stdio" }, { envRef: (name) => `\${${name}:-}` }),
       http: httpEntry({}, { envRef: (name) => `\${env:${name}}` }),
     }),
     hook: hooksConfig({

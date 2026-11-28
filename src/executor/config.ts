@@ -28,6 +28,54 @@ export interface ConfigEditor {
   removeAt(text: string, keyPath: string[], index: number): string;
 }
 
+/**
+ * How many leading keys of `keyPath` name containers that do not exist yet, as the length of the
+ * shortest missing prefix: writing at `keyPath` creates every container from there down. Only the
+ * first `depth` prefixes are looked at (the entry's parents, or for an array element the array too).
+ */
+export function missingFrom(
+  editor: ConfigEditor,
+  text: string,
+  keyPath: string[],
+  depth: number,
+): number | undefined {
+  for (let i = 1; i <= depth; i++) if (editor.get(text, keyPath.slice(0, i)) === undefined) return i;
+  return undefined;
+}
+
+/** The containers an entry created, from `createdFrom` down to `depth` keys. */
+export function createdContainers(
+  keyPath: string[],
+  createdFrom: number | undefined,
+  depth: number,
+): string[][] {
+  if (createdFrom === undefined) return [];
+  const out: string[][] = [];
+  for (let i = createdFrom; i <= depth; i++) out.push(keyPath.slice(0, i));
+  return out;
+}
+
+/**
+ * Remove each container that is empty, deepest first, so one the engine created to hold an entry
+ * goes when the entry goes. A container with anything of the user's in it stays.
+ */
+export function pruneEmpty(editor: ConfigEditor, text: string, containers: string[][]): string {
+  const seen = new Set<string>();
+  const unique = containers.filter((c) => {
+    const key = c.join("\u0000");
+    return seen.has(key) ? false : (seen.add(key), true);
+  });
+  let next = text;
+  for (const keyPath of unique.sort((a, b) => b.length - a.length)) {
+    const value = editor.get(next, keyPath);
+    const empty = Array.isArray(value)
+      ? value.length === 0
+      : value !== null && typeof value === "object" && Object.keys(value).length === 0;
+    if (empty) next = editor.remove(next, keyPath);
+  }
+  return next;
+}
+
 /** The array at `keyPath`, or an empty one if nothing is there. Anything else there is an error. */
 export function arrayAt(editor: ConfigEditor, text: string, keyPath: string[]): JsonValue[] {
   const value = editor.get(text, keyPath);

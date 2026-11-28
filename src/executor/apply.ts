@@ -17,7 +17,15 @@ import type { Env } from "../harness/define";
 import { displayPath } from "../ops/plan";
 import type { ConfigFormat, Diagnostic, Plan } from "../ops/types";
 import type { Scope } from "../schema/manifest";
-import { arrayAt, ConfigError, canonicalJson, editorFor } from "./config";
+import {
+  arrayAt,
+  ConfigError,
+  canonicalJson,
+  createdContainers,
+  editorFor,
+  missingFrom,
+  pruneEmpty,
+} from "./config";
 import {
   fromLedgerPath,
   hashBytes,
@@ -263,6 +271,13 @@ export function applyInstall(options: InstallOptions): ApplyResult {
   const queue = (path: string, edit: ConfigEdit) => edits.set(path, [...(edits.get(path) ?? []), edit]);
   const backupConfigs = new Set<string>();
   const mayDelete = new Set<string>();
+  // Containers the engine created for an entry it is now removing, to remove too once empty.
+  const containers = new Map<string, { format: ConfigFormat; keyPaths: string[][] }>();
+  const emptied = (path: string, format: ConfigFormat, keyPaths: string[][]) => {
+    const existing = containers.get(path);
+    if (existing) existing.keyPaths.push(...keyPaths);
+    else containers.set(path, { format, keyPaths: [...keyPaths] });
+  };
   const nextConfigs: Ledger["configs"] = [];
   const sameKey = (a: { path: string; keyPath: string[] }, path: string, keyPath: string[]) =>
     a.path === path && a.keyPath.join("\u0000") === keyPath.join("\u0000");
@@ -292,6 +307,16 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       if (!(e instanceof ConfigError)) throw e;
       conflicts.push({ target: show(config.path), reason: `${e.message}; fix the file and run again` });
       continue;
+    }
+    if (owned?.createdFrom) record.createdFrom = owned.createdFrom;
+    else if (!owned && current === undefined) {
+      const from = missingFrom(
+        editorFor(config.format),
+        readText(config.path),
+        config.keyPath,
+        config.keyPath.length - 1,
+      );
+      if (from) record.createdFrom = from;
     }
     if (current === undefined) {
       actions.push({ type: "create", target });
@@ -356,6 +381,11 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       apply: (text) => editorFor(entry.format).remove(text, entry.keyPath),
     });
     if (entry.createdFile) mayDelete.add(path);
+    emptied(
+      path,
+      entry.format,
+      createdContainers(entry.keyPath, entry.createdFrom, entry.keyPath.length - 1),
+    );
   }
 
   const nextItems: Ledger["items"] = [];
@@ -383,6 +413,17 @@ export function applyInstall(options: InstallOptions): ApplyResult {
       conflicts.push({ target: show(item.path), reason: `${e.message}; fix the file and run again` });
       continue;
     }
+    const recorded = nextItems.at(-1)!;
+    if (owned?.createdFrom) recorded.createdFrom = owned.createdFrom;
+    else if (!owned && !present) {
+      const from = missingFrom(
+        editorFor(item.format),
+        readText(item.path),
+        item.keyPath,
+        item.keyPath.length,
+      );
+      if (from) recorded.createdFrom = from;
+    }
     if (present) actions.push({ type: owned ? "unchanged" : "adopt", target });
     else {
       actions.push({ type: "create", target });
@@ -407,6 +448,11 @@ export function applyInstall(options: InstallOptions): ApplyResult {
     actions.push({ type: "remove", target: `${show(path)} → ${entry.keyPath.join(".")}[]` });
     queue(path, { format: entry.format, apply: removeItemByHash(entry.format, entry.keyPath, entry.hash) });
     if (entry.createdFile) mayDelete.add(path);
+    emptied(path, entry.format, createdContainers(entry.keyPath, entry.createdFrom, entry.keyPath.length));
+  }
+  // Last, after every edit to the file, so a container something else still uses is kept.
+  for (const [path, { format, keyPaths }] of containers) {
+    queue(path, { format, apply: (text) => pruneEmpty(editorFor(format), text, keyPaths) });
   }
 
   if (conflicts.length > 0) return result(false);
@@ -508,6 +554,12 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
     const configs: Ledger["configs"] = [];
     const texts = new Map<string, string>();
     const mayDelete = new Map<string, ConfigFormat>();
+    const containers = new Map<string, { format: ConfigFormat; keyPaths: string[][] }>();
+    const emptied = (path: string, format: ConfigFormat, keyPaths: string[][]) => {
+      const existing = containers.get(path);
+      if (existing) existing.keyPaths.push(...keyPaths);
+      else containers.set(path, { format, keyPaths: [...keyPaths] });
+    };
     for (const entry of ledger.configs) {
       const left = remaining(entry.harnesses);
       if (left.length > 0) {
@@ -538,6 +590,11 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       actions.push({ type: "remove", target });
       texts.set(path, editor.remove(text, entry.keyPath));
       if (entry.createdFile) mayDelete.set(path, entry.format);
+      emptied(
+        path,
+        entry.format,
+        createdContainers(entry.keyPath, entry.createdFrom, entry.keyPath.length - 1),
+      );
     }
     const items: Ledger["items"] = [];
     for (const entry of ledger.items) {
@@ -559,6 +616,11 @@ export function applyUninstall(options: UninstallOptions): ApplyResult {
       actions.push({ type: "remove", target: `${show(path)} → ${entry.keyPath.join(".")}[]` });
       texts.set(path, next);
       if (entry.createdFile) mayDelete.set(path, entry.format);
+      emptied(path, entry.format, createdContainers(entry.keyPath, entry.createdFrom, entry.keyPath.length));
+    }
+    for (const [path, { format, keyPaths }] of containers) {
+      const text = texts.get(path);
+      if (text !== undefined) texts.set(path, pruneEmpty(editorFor(format), text, keyPaths));
     }
     for (const [path, text] of texts) {
       const format = mayDelete.get(path);

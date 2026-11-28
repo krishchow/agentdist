@@ -34,7 +34,12 @@ export const qwen = defineHarness({
   kinds: {
     skill: sharedSkills(),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }),
-    command: markdownCommands({ user: inConfig("commands"), local: inConfig("commands") }),
+    // Markdown commands take Gemini's placeholder; a `$ARGUMENTS` in one reaches the model as written,
+    // with the arguments appended after it.
+    command: markdownCommands(
+      { user: inConfig("commands"), local: inConfig("commands") },
+      { argumentsPlaceholder: "{{args}}" },
+    ),
     mcpServer: mcpConfig({
       file: { user: inConfig("settings.json"), local: inConfig("settings.json") },
       format: "json",

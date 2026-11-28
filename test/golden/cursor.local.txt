@@ -9,6 +9,7 @@
     "demo-mcp@1.2.3"
   ],
   "env": {
+    "DEMO_TOKEN": "${DEMO_TOKEN:-}",
     "DEMO_MODE": "1"
   }
 }

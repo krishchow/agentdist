@@ -39,6 +39,11 @@ export const Ledger = z.object({
       /** The engine created the file, so it may delete it again once nothing is left in it. */
       createdFile: z.boolean().optional(),
       /**
+       * The engine created the containers on the way to the entry, from the key path's first
+       * `createdFrom` keys down, so it may remove them again once nothing is left in them.
+       */
+      createdFrom: z.number().int().positive().optional(),
+      /**
        * The entry was already there, identical, before the package was installed. It is not
        * removed on uninstall: something else put it there and may still need it.
        */
@@ -55,6 +60,8 @@ export const Ledger = z.object({
         hash: z.string(),
         harnesses: z.array(z.string()),
         createdFile: z.boolean().optional(),
+        /** As for configs; the array itself counts as one of the containers. */
+        createdFrom: z.number().int().positive().optional(),
       }),
     )
     .default([]),

@@ -44,7 +44,7 @@ tools:
   - demo/doctor
 ---
 
-You review changes. Use demo/doctor to check the environment.
+You review changes. Use demo-doctor to check the environment.
 
 === .github/hooks/demo-greet.json
 {
@@ -85,14 +85,14 @@ description: Set the demo up. Use on first run.
 
 # Setup
 
-Call demo/doctor first, then run `node .github/skills/demo-setup/scripts/run.mjs check`.
+Call demo-doctor first, then run `node .github/skills/demo-setup/scripts/run.mjs check`.
 When it is ready, continue with /demo-ship-it or hand off to `demo-reviewer`.
 This is demo 1.2.3. Leave ${{ github.token }} and {{ handlebars }} alone.
 
 === .github/skills/demo-ship-it/references/notes.md
 # Notes
 
-See demo/status.
+See demo-status.
 
 === .github/skills/demo-ship-it/SKILL.md
 ---
