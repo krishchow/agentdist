@@ -1,8 +1,9 @@
 import { join } from "node:path";
 import { stringify as stringifyToml } from "smol-toml";
-import type { Handler, PlanCtx, ScopedLoc } from "../harness/define";
+import { type Handler, hasOwnCommands, type PlanCtx, type ScopedLoc } from "../harness/define";
 import { renderDoc } from "../ir/markdown";
 import type { CommandNode, SkillNode } from "../ir/nodes";
+import { configRootOf } from "../ops/plan";
 import { frontmatter, mapBody, pipe, resolveRefs } from "../transforms/doc";
 
 /** The canonical placeholder for everything the user typed after the command. */
@@ -106,19 +107,56 @@ export interface CommandsAsSkillsOptions {
 }
 
 /**
+ * The harnesses in this install that have commands of their own and read the shared skills
+ * directory `skills` puts this harness's skills in, so would list a command there a second time.
+ */
+function nativeReaders(
+  skills: Handler<"skill">,
+  ctx: PlanCtx,
+): { dir: string; labels: string[] } | undefined {
+  const shared = skills.shared?.[ctx.scope];
+  if (!shared) return undefined;
+  const dir = shared(ctx);
+  const labels = ctx.harnesses
+    .filter((other) => other.id !== ctx.harness.id && hasOwnCommands(other))
+    .filter((other) => {
+      const theirs = other.kinds.skill.shared?.[ctx.scope];
+      return theirs?.({ env: ctx.env, configRoot: configRootOf(other, ctx.scope, ctx.env) }) === dir;
+    })
+    .map((other) => other.label);
+  return labels.length > 0 ? { dir: ctx.displayPath(dir), labels } : undefined;
+}
+
+/**
  * A command as an Agent Skill, for a harness whose slash commands are its skills. The skill is
  * planned by the harness's own skills handler, so it goes where that harness's skills go, and has
  * the command's name, description and body. It is for the user to invoke, so it asks not to be
  * invoked by the model on its own, unless `modelInvocable` says that would leave no way to run it.
+ *
+ * Where that is the shared skills directory, a harness installed alongside that reads it and has
+ * commands of its own would show the command twice, its own and the skill, and some offer the
+ * skill to the model whatever its frontmatter says. Then the skill is left out, and this harness
+ * goes without the command.
  */
 export function commandsAsSkills(
   skills: Handler<"skill">,
   options: CommandsAsSkillsOptions = {},
 ): Handler<"command"> {
   return {
+    asSkill: true,
     plan(node, ctx) {
       if (ctx.pkg.nodes.some((other) => other.kind === "skill" && other.name === node.name)) {
         return { skip: `it would be a skill, and the package already has a skill named ${node.name}` };
+      }
+      const readers = nativeReaders(skills, ctx);
+      if (readers) {
+        const { dir, labels } = readers;
+        const them = labels.join(" and ");
+        const [reads, installs] = labels.length > 1 ? ["read", "install"] : ["reads", "installs"];
+        ctx.warn(
+          `command ${node.name} is not installed for ${ctx.harness.label}: as a skill in ${dir} it would show up a second time in ${them}, which ${reads} that directory and ${installs} the command as its own`,
+        );
+        return { skip: `${them} ${reads} ${dir} too and ${installs} the command as its own` };
       }
       const description = node.description ?? `The ${node.name} command.`;
       const skill: SkillNode = {

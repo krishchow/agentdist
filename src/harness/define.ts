@@ -52,6 +52,8 @@ export interface PlanCtx extends LocCtx {
   pkg: Package;
   scope: Scope;
   harness: HarnessDef;
+  /** Every harness this install plans for at this scope, this one included. */
+  harnesses: HarnessDef[];
   /** The name an artifact is installed under, after namespacing. */
   installed(name: string): string;
   /** Resolve symbolic references in `text`. `skillDir` is the absolute directory of the skill it belongs to. */
@@ -71,7 +73,20 @@ export interface Skip {
 export interface Handler<K extends NodeKind> {
   /** Why the harness cannot take this kind at all. Shown to the user, never silently dropped. */
   unsupported?: string;
+  /**
+   * Skills only: the cross-harness directory the handler puts skills in, per scope. Other
+   * harnesses read it too, so what goes there shows up in each of them.
+   */
+  shared?: ScopedLoc;
+  /** Commands only: a command is installed as a skill, not in a command format of the harness's own. */
+  asSkill?: boolean;
   plan(node: NodeOf<K>, ctx: PlanCtx): Op[] | Skip;
+}
+
+/** The harness has slash commands of its own, which a command is installed as. */
+export function hasOwnCommands(harness: HarnessDef): boolean {
+  const { unsupported, asSkill } = harness.kinds.command;
+  return !unsupported && !asSkill;
 }
 
 export function unsupported<K extends NodeKind>(reason: string): Handler<K> {
@@ -80,7 +95,14 @@ export function unsupported<K extends NodeKind>(reason: string): Handler<K> {
 
 /** A different handler per scope, for a harness whose two scopes do not work the same way. */
 export function byScope<K extends NodeKind>(handlers: Record<Scope, Handler<K>>): Handler<K> {
-  return { plan: (node, ctx) => handlers[ctx.scope].plan(node, ctx) };
+  const { user, local } = handlers;
+  return {
+    // Each scope's shared directory is the one its own handler uses. A mark that is not per scope
+    // holds only if it holds at both.
+    shared: { user: user.shared?.user, local: local.shared?.local },
+    asSkill: user.asSkill && local.asSkill,
+    plan: (node, ctx) => handlers[ctx.scope].plan(node, ctx),
+  };
 }
 
 /**

@@ -39,6 +39,7 @@ export function makeCtx(
   harness: HarnessDef,
   scope: Scope,
   env: Env,
+  harnesses: HarnessDef[],
   warn: (message: string) => void,
   dialect: Dialect = harness.dialect,
 ): PlanCtx {
@@ -68,11 +69,12 @@ export function makeCtx(
     pkg,
     scope,
     harness,
+    harnesses,
     installed,
     renderRef,
     render: (text, skillDir) => replaceRefs(text, (ref) => renderRef(ref, skillDir)),
     displayPath: show,
-    withDialect: (other) => makeCtx(pkg, harness, scope, env, warn, other),
+    withDialect: (other) => makeCtx(pkg, harness, scope, env, harnesses, warn, other),
     warn,
   };
 }
@@ -102,7 +104,7 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
         return;
       diagnostics.push({ level, harness: harness.id, node: current ? nodeId(current) : undefined, message });
     };
-    const ctx = makeCtx(pkg, harness, scope, env, (message) => note("warn", message));
+    const ctx = makeCtx(pkg, harness, scope, env, harnesses, (message) => note("warn", message));
     const installed = new Set<NodeKind>();
 
     for (const node of pkg.nodes) {
@@ -134,7 +136,7 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   const claimFile = (path: string, op: FileOp, claim: Claim, harness: HarnessDef, borrowed = false) => {
     const existing = files.get(path);
     if (!existing) {
-      const { satisfiedBy: _, ...file } = op;
+      const { satisfiedBy: _, coveredBy: __, ...file } = op;
       files.set(path, { ...file, path, claims: [claim] });
       return;
     }
@@ -152,12 +154,14 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   };
 
   // Files a harness writes unconditionally come first, so that a harness able to read the same
-  // artifact from somewhere else can see what will already be there.
+  // artifact from somewhere else can see what will already be there. A file another harness's
+  // config registration may cover waits for the registrations, below.
   for (const { op, claim, harness } of proposed) {
-    if (op.type === "file" && !op.satisfiedBy?.length) claimFile(op.path, op, claim, harness);
+    if (op.type === "file" && !op.satisfiedBy?.length && !op.coveredBy?.length)
+      claimFile(op.path, op, claim, harness);
   }
   for (const { op, claim, harness } of proposed) {
-    if (op.type !== "file" || !op.satisfiedBy?.length) continue;
+    if (op.type !== "file" || !op.satisfiedBy?.length || op.coveredBy?.length) continue;
     const elsewhere = files.has(op.path) ? undefined : op.satisfiedBy.find((path) => files.has(path));
     claimFile(elsewhere ?? op.path, op, claim, harness, elsewhere !== undefined);
   }
@@ -202,15 +206,25 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
   for (const { op, claim } of proposed) {
     if (op.type === "config-item" && !op.coveredBy?.length) claimItem(op, claim);
   }
-  for (const { op, claim } of proposed) {
-    if (op.type !== "config-item" || !op.coveredBy?.length) continue;
-    const covering = [...items.values()].find(
+  // Another harness's registration of the same node, in a file this one also acts on. Claiming it
+  // keeps it installed for this harness until this harness is uninstalled too.
+  const coveringItem = (coveredBy: string[], claim: Claim) =>
+    [...items.values()].find(
       (item) =>
-        op.coveredBy?.includes(item.path) &&
+        coveredBy.includes(item.path) &&
         item.claims.some((c) => c.node === claim.node && c.harness !== claim.harness),
     );
+  for (const { op, claim } of proposed) {
+    if (op.type !== "config-item" || !op.coveredBy?.length) continue;
+    const covering = coveringItem(op.coveredBy, claim);
     if (covering) covering.claims.push(claim);
     else claimItem(op, claim);
+  }
+  for (const { op, claim, harness } of proposed) {
+    if (op.type !== "file" || !op.coveredBy?.length) continue;
+    const covering = coveringItem(op.coveredBy, claim);
+    if (covering) covering.claims.push(claim);
+    else claimFile(op.path, op, claim, harness);
   }
 
   return {

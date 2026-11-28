@@ -7,6 +7,7 @@ import { dialect } from "../src/harness/dialect";
 import { dotHome, inConfig, inHome, inProject } from "../src/harness/locations";
 import { claude } from "../src/harnesses/claude";
 import { codex } from "../src/harnesses/codex";
+import { copilot } from "../src/harnesses/copilot";
 import { cursor } from "../src/harnesses/cursor";
 import { devin } from "../src/harnesses/devin";
 import { factory } from "../src/harnesses/factory";
@@ -349,6 +350,37 @@ describe("hooks", () => {
     install({ pkg: demo(), harnesses: [claude, devin], scope: "local", env });
     expect(read(env.projectRoot, ".claude/settings.json")).toContain("guard.mjs");
     expect(existsSync(join(env.projectRoot, ".devin/hooks.v1.json"))).toBe(false);
+  });
+
+  it("lets Copilot run Claude Code's project hooks instead of a file of its own", () => {
+    // In a project Copilot runs both, so a hook in each would fire twice per Copilot session.
+    const env = sandbox();
+    const hookFile = join(env.projectRoot, ".github/hooks/demo-guard.json");
+    install({ pkg: demo(), harnesses: [claude, copilot], scope: "local", env });
+    expect(existsSync(join(env.projectRoot, ".github/hooks"))).toBe(false);
+    const settings = join(env.projectRoot, ".claude/settings.json");
+    expect(read(settings)).toContain("guard.mjs");
+    const item = status("demo", env).local?.items.find((i) => i.keyPath.join(".") === "hooks.PreToolUse");
+    expect(item?.harnesses).toEqual(["claude", "copilot"]);
+
+    // Without Claude Code, Copilot's hook stays where Copilot reads it, and its script with it.
+    uninstall({ pkgName: "demo", scope: "local", env, harnessIds: ["claude"] });
+    expect(read(settings)).toContain("guard.mjs");
+    expect(existsSync(join(env.projectRoot, ".agentdist/demo/hooks/guard.mjs"))).toBe(true);
+    // The next install gives Copilot a file of its own and takes the registration back out.
+    install({ pkg: demo(), harnesses: [copilot], scope: "local", env });
+    expect(existsSync(hookFile)).toBe(true);
+    expect(existsSync(settings)).toBe(false);
+
+    uninstall({ pkgName: "demo", scope: "local", env });
+    expect(existsSync(join(env.projectRoot, ".github"))).toBe(false);
+  });
+
+  it("gives Copilot its own user hooks, since it does not run Claude Code's", () => {
+    const env = sandbox();
+    install({ pkg: demo(), harnesses: [claude, copilot], scope: "user", env });
+    expect(read(env.home, ".claude/settings.json")).toContain("guard.mjs");
+    expect(existsSync(join(env.home, ".copilot/hooks/demo-guard.json"))).toBe(true);
   });
 
   it("gives Cursor its own hooks, with Claude Code's command so Cursor runs one of the two", () => {

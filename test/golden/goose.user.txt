@@ -1,6 +1,7 @@
-[info] agent:reviewer skipped: Goose runs subagents from recipes, not agent definition files
+[warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Goose; it gets the harness's default tools
 [warn] command:ship command ship: Goose has no argument placeholder and gives the model the arguments after the command's text, so $ARGUMENTS is written as "the arguments given after the command"
 [info] mcpServer:demo-remote skipped: Goose does not document how a header reads the environment; add it by hand
+[next]  Goose prefers a project's subagents to yours, Claude Code's .claude/agents included, so in a project with this package installed for Claude Code it runs that copy
 
 === ~/.config/goose/config.yaml (yaml) → extensions . demo
 {
@@ -97,3 +98,11 @@ disable-model-invocation: true
 ---
 
 Ship the arguments given after the command using the `demo-ship-it` skill.
+
+=== ~/.goose/agents/demo-reviewer.md
+---
+name: demo-reviewer
+description: Reviews a change before it ships.
+---
+
+You review changes. Use `doctor` (demo MCP tool) to check the environment.

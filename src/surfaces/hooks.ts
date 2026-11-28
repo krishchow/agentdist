@@ -95,6 +95,14 @@ export interface HooksConfigOptions extends HookEventsOptions {
   alsoReads?: ScopedLoc[];
 }
 
+/** The files in `alsoReads` at the scope being planned. */
+function alsoRead(alsoReads: ScopedLoc[] | undefined, ctx: PlanCtx): string[] {
+  return (alsoReads ?? []).flatMap((loc) => {
+    const other = loc[ctx.scope];
+    return other ? [other(ctx)] : [];
+  });
+}
+
 /**
  * Hooks registered as elements of a list in a config file, which is how Claude Code does it and
  * most harnesses since. The engine owns the element it adds and nothing else in the list.
@@ -115,10 +123,7 @@ export function hooksConfig(options: HooksConfigOptions): Handler<"hook"> {
         keyPath: options.keyPath(hook, ctx),
         value: options.item(hook),
         preamble: options.preamble,
-        coveredBy: (options.alsoReads ?? []).flatMap((loc) => {
-          const other = loc[ctx.scope];
-          return other ? [other(ctx)] : [];
-        }),
+        coveredBy: alsoRead(options.alsoReads, ctx),
       });
       return ops;
     },
@@ -130,6 +135,11 @@ export interface HookFilesOptions extends HookEventsOptions {
   dir: ScopedLoc;
   /** The file for one hook: its name and its JSON content. */
   file: (hook: NativeHook) => { name: string; content: JsonValue };
+  /**
+   * Other harnesses' hook files this harness also runs hooks from, per scope. A hook registered
+   * there for the same install gets no file here.
+   */
+  alsoReads?: ScopedLoc[];
 }
 
 /** Hooks as one definition file each in a directory the harness scans. */
@@ -143,7 +153,12 @@ export function hooksDir(options: HookFilesOptions): Handler<"hook"> {
       const { name, content } = options.file(hook);
       return [
         ...hookFiles(ctx).ops,
-        { type: "file", path: join(dir(ctx), name), content: `${JSON.stringify(content, null, 2)}\n` },
+        {
+          type: "file",
+          path: join(dir(ctx), name),
+          content: `${JSON.stringify(content, null, 2)}\n`,
+          coveredBy: alsoRead(options.alsoReads, ctx),
+        },
       ];
     },
   };

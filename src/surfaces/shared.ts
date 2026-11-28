@@ -41,5 +41,5 @@ export function sharedSkills(options: SharedSkillsOptions = {}): Handler<"skill"
         },
       }
     : AGENTS_SKILLS;
-  return skillsDir(dir, { ...rest, portable: true });
+  return { ...skillsDir(dir, { ...rest, portable: true }), shared: dir };
 }

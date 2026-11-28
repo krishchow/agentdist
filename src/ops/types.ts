@@ -23,6 +23,12 @@ export interface FileOp {
    * harness does not end up listing the artifact twice.
    */
   satisfiedBy?: string[];
+  /**
+   * Config files the harness would also act on this artifact from, as for `ConfigItemOp`. If
+   * another harness in the plan registers the same node in one of them, this file is dropped and
+   * that registration is claimed instead.
+   */
+  coveredBy?: string[];
 }
 
 /** One key the package owns inside a config file that belongs to the user. */

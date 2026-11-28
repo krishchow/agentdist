@@ -20,6 +20,7 @@ export const goose = {
   // A command is a skill. `/skills` only lists them; the model loads one with load_skill, which
   // the mock does not call, so the skill being offered to the model is the evidence.
   command: null,
-  listed: ["skill", "command", "mcpServer"],
+  // A subagent is listed by name and description in the summon extension's part of the prompt.
+  listed: ["skill", "agent", "command", "mcpServer"],
   hookEvents: ALL_EVENTS,
 };

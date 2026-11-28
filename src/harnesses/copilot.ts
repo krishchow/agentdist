@@ -3,7 +3,7 @@ import { CANONICAL_TOOLS, dialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { commandsAsSkills } from "../surfaces/commands";
-import { hooksDir } from "../surfaces/hooks";
+import { CLAUDE_HOOKS, hooksDir } from "../surfaces/hooks";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { skillsDir } from "../surfaces/skills";
 
@@ -78,6 +78,10 @@ export const copilot = defineHarness({
         PreCompact: "PreCompact",
       },
       tools: Object.fromEntries(CANONICAL_TOOLS.map((tool) => [tool, tool])),
+      // In a project, Copilot also runs the hooks in Claude Code's settings, matcher or not, and
+      // sets $CLAUDE_PROJECT_DIR for them, so one installed there gets no file of its own. Not the
+      // user's ~/.claude/settings.json, which it ignores (both checked in the e2e image, CLI 1.0.116).
+      alsoReads: [{ local: CLAUDE_HOOKS.local }],
       file: (hook) => ({
         name: `${hook.name}.json`,
         content: {

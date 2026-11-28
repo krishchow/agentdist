@@ -23,7 +23,7 @@ path was checked against, are in the harness's file.
 | Qwen Code | `qwen` | `~/.agents/skills` | `~/.qwen/agents` | `~/.qwen/commands` | `~/.qwen/settings.json` → `mcpServers` | `~/.qwen/settings.json` → `hooks` |
 | Amp | `amp` | `~/.agents/skills` | — | `~/.agents/skills` | `~/.config/amp/settings.json` → `amp.mcpServers` | — |
 | pi | `pi` | `~/.agents/skills` | — | `~/.pi/agent/prompts` | `~/.pi/agent/mcp.json` → `mcpServers` | — |
-| Goose | `goose` | `~/.agents/skills` | — | `~/.agents/skills` | `~/.config/goose/config.yaml` → `extensions` | `~/.agents/plugins` |
+| Goose | `goose` | `~/.agents/skills` | `~/.goose/agents` | `~/.agents/skills` | `~/.config/goose/config.yaml` → `extensions` | `~/.agents/plugins` |
 | Zed | `zed` | `~/.agents/skills` | — | `~/.agents/skills` | `~/.config/zed/settings.json` → `context_servers` | — |
 
 ## Repository scope (`--local`)
@@ -43,7 +43,7 @@ path was checked against, are in the harness's file.
 | Qwen Code | `qwen` | `.agents/skills` | `.qwen/agents` | `.qwen/commands` | `.qwen/settings.json` → `mcpServers` | `.qwen/settings.json` → `hooks` |
 | Amp | `amp` | `.agents/skills` | — | `.agents/skills` | `.amp/settings.json` → `amp.mcpServers` | — |
 | pi | `pi` | `.agents/skills` | — | `.pi/prompts` | `.pi/mcp.json` → `mcpServers` | — |
-| Goose | `goose` | `.agents/skills` | — | `.agents/skills` | — | `.agents/plugins` |
+| Goose | `goose` | `.agents/skills` | `.goose/agents` | `.agents/skills` | — | `.agents/plugins` |
 | Zed | `zed` | `.agents/skills` | — | `.agents/skills` | — | — |
 
 ## How each harness names things
