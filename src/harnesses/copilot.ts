@@ -45,8 +45,12 @@ export const copilot = defineHarness({
       { user: inConfig("agents"), local: inConfig("agents") },
       { ext: ".agent.md", tools: "list" },
     ),
-    // No command directory of its own; a skill is its slash command.
-    command: commandsAsSkills(skillsDir({ user: inConfig("skills"), local: inConfig("skills") })),
+    // No command directory of its own; a skill is its slash command. A headless session does not
+    // expand `/name`, and a skill marked disable-model-invocation is hidden from the model, so it
+    // would have no way to run there: the model may invoke this one.
+    command: commandsAsSkills(skillsDir({ user: inConfig("skills"), local: inConfig("skills") }), {
+      modelInvocable: true,
+    }),
     mcpServer: mcpConfig({
       // Not the root .mcp.json, although Copilot reads it: Claude Code owns that file's entries, and
       // the two need different ones. VS Code's Copilot harness reads only the root file and the

@@ -296,7 +296,7 @@ async function runCell(adapter, scope, opts) {
     for (const d of report.diagnostics ?? []) {
       if (d.harness !== adapter.id) continue;
       if (d.message.startsWith("skipped")) result.skipped[d.node] = d.message.replace(/^skipped: /, "");
-      else result.warnings.push(d.message);
+      else if (d.level === "warn") result.warnings.push(d.message);
     }
     result.placed = ALL_NODES.filter((n) => !(n in result.skipped));
     result.nextSteps = (report.diagnostics ?? []).filter(

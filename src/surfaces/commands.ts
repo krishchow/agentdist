@@ -98,13 +98,18 @@ export function tomlCommands(dir: ScopedLoc, options: TomlCommandsOptions = {}):
 export interface CommandsAsSkillsOptions {
   /** How a skill invoked with arguments refers to them, where the harness has a placeholder. */
   argumentsPlaceholder?: string;
+  /**
+   * Let the model invoke the skill too. Only for a harness where a skill the model cannot see
+   * cannot be run at all, because the user has no way to invoke one by name.
+   */
+  modelInvocable?: boolean;
 }
 
 /**
  * A command as an Agent Skill, for a harness whose slash commands are its skills. The skill is
  * planned by the harness's own skills handler, so it goes where that harness's skills go, and has
  * the command's name, description and body. It is for the user to invoke, so it asks not to be
- * invoked by the model on its own.
+ * invoked by the model on its own, unless `modelInvocable` says that would leave no way to run it.
  */
 export function commandsAsSkills(
   skills: Handler<"skill">,
@@ -125,7 +130,7 @@ export function commandsAsSkills(
             name: node.name,
             description,
             ...(node.argumentHint ? { "argument-hint": node.argumentHint } : {}),
-            "disable-model-invocation": true,
+            ...(options.modelInvocable ? {} : { "disable-model-invocation": true }),
           },
           body: withArguments(node.doc.body, node, ctx, options.argumentsPlaceholder),
         },

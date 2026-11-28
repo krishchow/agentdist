@@ -109,7 +109,6 @@ No references here, so this file installs byte for byte.
 name: demo-ship
 description: Ship the current change
 argument-hint: "[target]"
-disable-model-invocation: true
 ---
 
 Ship the arguments given after the command using /demo-ship-it.

@@ -27,8 +27,9 @@ export const copilot = {
     await ctx.run(["copilot", "mcp", "list"]);
   },
   session: (_cell, prompt) => ["copilot", "-p", prompt, "--allow-all-tools", "--no-auto-update"],
-  // A command is a skill, and a headless session sends `/name` to the model as it is.
+  // A command is a skill the model may invoke, and a headless session sends `/name` to the model
+  // as it is: the skill being offered to the model is the evidence.
   command: null,
-  listed: ["skill", "agent", "mcpServer"],
+  listed: ["skill", "agent", "command", "mcpServer"],
   hookEvents: ALL_EVENTS,
 };
