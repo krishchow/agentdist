@@ -37,7 +37,8 @@ export const gemini = defineHarness({
   }),
   kinds: {
     // Within a scope Gemini prefers .agents/skills over .gemini/skills, so the shared one is used.
-    skill: sharedSkills(),
+    // GEMINI_CLI_HOME replaces the home directory, so it moves the user's .agents/skills too.
+    skill: sharedSkills({ homeVar: "GEMINI_CLI_HOME" }),
     agent: markdownAgents({ user: inConfig("agents"), local: inConfig("agents") }, { tools: "list" }),
     command: tomlCommands(
       { user: inConfig("commands"), local: inConfig("commands") },

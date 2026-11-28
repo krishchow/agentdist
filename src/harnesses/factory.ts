@@ -1,6 +1,7 @@
-import { defineHarness } from "../harness/define";
+import { isAbsolute, join } from "node:path";
+import { defineHarness, type Env } from "../harness/define";
 import { dialect, proseToolRef } from "../harness/dialect";
-import { configRootExists, dotHome, inConfig } from "../harness/locations";
+import { configRootExists, inConfig } from "../harness/locations";
 import { HOOK_EVENTS } from "../schema/manifest";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
@@ -8,7 +9,11 @@ import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
-const home = dotHome(".factory");
+// FACTORY_HOME_OVERRIDE replaces the home directory for Factory: .factory and .agents/skills.
+const home = (env: Env) => {
+  const override = env.vars.FACTORY_HOME_OVERRIDE;
+  return join(override && isAbsolute(override) ? override : env.home, ".factory");
+};
 
 export const factory = defineHarness({
   id: "factory",
@@ -35,7 +40,7 @@ export const factory = defineHarness({
     mcpGrant: () => null,
   }),
   kinds: {
-    skill: sharedSkills(),
+    skill: sharedSkills({ homeVar: "FACTORY_HOME_OVERRIDE" }),
     // Same markdown subagents as everyone else; Factory calls them droids.
     agent: markdownAgents({ user: inConfig("droids"), local: inConfig("droids") }, { tools: "list" }),
     command: markdownCommands({ user: inConfig("commands"), local: inConfig("commands") }),

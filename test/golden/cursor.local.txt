@@ -30,7 +30,7 @@
 
 === .cursor/hooks.json (json) → hooks . preToolUse [] (one element)
 {
-  "command": "node \"$CURSOR_PROJECT_DIR/.agentdist/demo/hooks\"/guard.mjs",
+  "command": "node \"$CLAUDE_PROJECT_DIR/.agentdist/demo/hooks\"/guard.mjs",
   "matcher": "Shell|Write",
   "timeout": 10
 }

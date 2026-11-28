@@ -19,7 +19,8 @@ export const devin = defineHarness({
   dialect: dialect({ toolRef: proseToolRef, ...noToolGrants }),
   kinds: {
     // .claude/skills is imported for projects only.
-    skill: sharedSkills({ alsoReads: [{ local: CLAUDE_SKILLS.local }] }),
+    // Devin reads Claude Code's skills at both scopes, and lists a skill in both places twice.
+    skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
     agent: markdownAgents(
       { user: inConfig("agents"), local: inConfig("agents") },
       { folderFile: "AGENT.md" },

@@ -3,7 +3,7 @@ import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
 import { markdownCommands } from "../surfaces/commands";
-import { CLAUDE_HOOKS, hooksConfig } from "../surfaces/hooks";
+import { hooksConfig } from "../surfaces/hooks";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
 
@@ -45,11 +45,13 @@ export const cursor = defineHarness({
         SubagentStop: "subagentStop",
         PreCompact: "preCompact",
       },
-      projectDir: "$CURSOR_PROJECT_DIR",
+      // Claude Code's variable, which Cursor also sets, so a command is byte for byte the one
+      // installed for Claude Code: Cursor runs Claude Code's hooks too, and drops one that is
+      // identical to its own. It skips Claude Code's file when no group in it has a matcher, so
+      // Cursor always gets its own copy.
+      projectDir: "$CLAUDE_PROJECT_DIR",
       // An edit is a Write here; there is no separate Edit tool.
       tools: { Bash: "Shell", Read: "Read", Write: "Write", Edit: "Write", Grep: "Grep", Task: "Task" },
-      // Cursor also runs Claude Code's hooks, so one installed there is not registered again.
-      alsoReads: [CLAUDE_HOOKS],
       keyPath: (hook) => ["hooks", hook.event],
       // Entries are flat: no group around the command.
       item: (hook) => ({

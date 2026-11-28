@@ -8,6 +8,8 @@ import { dotHome, inConfig, inHome, inProject } from "../src/harness/locations";
 import { claude } from "../src/harnesses/claude";
 import { codex } from "../src/harnesses/codex";
 import { cursor } from "../src/harnesses/cursor";
+import { devin } from "../src/harnesses/devin";
+import { factory } from "../src/harnesses/factory";
 import { gemini } from "../src/harnesses/gemini";
 import { zed } from "../src/harnesses/zed";
 import type { Package } from "../src/ir/nodes";
@@ -97,6 +99,18 @@ describe("install into Claude Code", () => {
     install({ pkg: demo(), harnesses: [claude], scope: "user", env });
     expect(existsSync(join(env.home, "elsewhere/skills/demo-setup/SKILL.md"))).toBe(true);
     expect(existsSync(join(env.home, "elsewhere/.claude.json"))).toBe(true);
+  });
+
+  it("puts shared skills under a variable that replaces the home directory, and only for that harness", () => {
+    const env = sandbox({ DEMO_API_TOKEN: "t" });
+    env.vars.GEMINI_CLI_HOME = join(env.home, "gemini-home");
+    env.vars.FACTORY_HOME_OVERRIDE = join(env.home, "factory-home");
+    install({ pkg: demo(), harnesses: [gemini, factory, codex], scope: "user", env });
+    for (const home of ["gemini-home", "factory-home", "."]) {
+      expect(existsSync(join(env.home, home, ".agents/skills/demo-setup/SKILL.md"))).toBe(true);
+    }
+    expect(existsSync(join(env.home, "factory-home/.factory/mcp.json"))).toBe(true);
+    expect(existsSync(join(env.home, "gemini-home/.gemini/settings.json"))).toBe(true);
   });
 
   it("installs a file with no references byte for byte, apart from its name", () => {
@@ -332,28 +346,28 @@ describe("hooks", () => {
 
   it("does not register a hook twice for a harness that also runs Claude Code's", () => {
     const env = sandbox();
-    install({ pkg: demo(), harnesses: [claude, cursor], scope: "local", env });
+    install({ pkg: demo(), harnesses: [claude, devin], scope: "local", env });
     expect(read(env.projectRoot, ".claude/settings.json")).toContain("guard.mjs");
-    expect(existsSync(join(env.projectRoot, ".cursor/hooks.json"))).toBe(false);
+    expect(existsSync(join(env.projectRoot, ".devin/hooks.v1.json"))).toBe(false);
+  });
 
-    // On its own, Cursor gets its own registration, in its own shape and tool names.
-    const alone = sandbox();
-    install({ pkg: demo(), harnesses: [cursor], scope: "local", env: alone });
-    expect(JSON.parse(read(alone.projectRoot, ".cursor/hooks.json"))).toEqual({
+  it("gives Cursor its own hooks, with Claude Code's command so Cursor runs one of the two", () => {
+    // Cursor skips a Claude Code settings file whose groups have no matcher, so it cannot rely on
+    // Claude Code's copy; it drops a Claude Code hook whose command is identical to its own.
+    const env = sandbox();
+    install({ pkg: demo(), harnesses: [claude, cursor], scope: "local", env });
+    const claudeHook = JSON.parse(read(env.projectRoot, ".claude/settings.json")).hooks.PreToolUse[0]
+      .hooks[0];
+    expect(JSON.parse(read(env.projectRoot, ".cursor/hooks.json"))).toEqual({
       version: 1,
       hooks: {
-        preToolUse: [
-          {
-            command: 'node "$CURSOR_PROJECT_DIR/.agentdist/demo/hooks"/guard.mjs',
-            matcher: "Shell|Write",
-            timeout: 10,
-          },
-        ],
+        preToolUse: [{ command: claudeHook.command, matcher: "Shell|Write", timeout: 10 }],
         sessionStart: [{ command: "echo demo ready" }],
       },
     });
-    uninstall({ pkgName: "demo", scope: "local", env: alone });
-    expect(existsSync(join(alone.projectRoot, ".cursor"))).toBe(false);
+    expect(claudeHook.command).toBe('node "$CLAUDE_PROJECT_DIR/.agentdist/demo/hooks"/guard.mjs');
+    uninstall({ pkgName: "demo", scope: "local", env });
+    expect(existsSync(join(env.projectRoot, ".cursor"))).toBe(false);
   });
 
   it("leaves a key that was already there when it arrived", () => {

@@ -4,7 +4,7 @@ import { dialect, proseToolRef } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownCommands } from "../surfaces/commands";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { sharedSkills } from "../surfaces/shared";
 import { skillsDir } from "../surfaces/skills";
 
 const home = dotHome(".cline", "CLINE_DIR");
@@ -20,7 +20,7 @@ export const cline = defineHarness({
     // install uses Cline's own directory.
     skill: byScope({
       user: skillsDir({ user: inConfig("skills") }),
-      local: sharedSkills({ alsoReads: [{ local: CLAUDE_SKILLS.local }] }),
+      local: sharedSkills(),
     }),
     agent: unsupported("Cline does not document a subagent file format"),
     // Workflows.

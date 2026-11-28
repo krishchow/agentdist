@@ -4,7 +4,7 @@ import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../har
 import { commandsAsSkills } from "../surfaces/commands";
 import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks";
 import { compactEntry, headerEnv, mcpConfig } from "../surfaces/mcp";
-import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { sharedSkills } from "../surfaces/shared";
 
 const home = xdgConfig("goose");
 
@@ -16,10 +16,10 @@ export const goose = defineHarness({
   // `/skills` only lists skills; the model loads one with its load_skill tool, so a skill is named.
   dialect: dialect({ toolRef: proseToolRef, skillRef: proseSkillRef }),
   kinds: {
-    skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
+    skill: sharedSkills(),
     agent: unsupported("Goose runs subagents from recipes, not agent definition files"),
     // Goose's own slash commands point at recipes; a skill is invoked with `/skills <name>`.
-    command: commandsAsSkills(sharedSkills({ alsoReads: [CLAUDE_SKILLS] })),
+    command: commandsAsSkills(sharedSkills()),
     // An MCP server is an "extension", configured for the user only.
     mcpServer: mcpConfig({
       file: { user: inConfig("config.yaml") },

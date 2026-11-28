@@ -1,3 +1,4 @@
+import { isAbsolute, join } from "node:path";
 import type { Handler, ScopedLoc } from "../harness/define";
 import { inHome, inProject } from "../harness/locations";
 import { type SkillsDirOptions, skillsDir } from "./skills";
@@ -20,7 +21,25 @@ export const CLAUDE_SKILLS: ScopedLoc = {
   local: inProject(".claude", "skills"),
 };
 
+export interface SharedSkillsOptions extends Omit<SkillsDirOptions, "portable"> {
+  /**
+   * A variable that replaces the home directory for this harness, `.agents/skills` included, so
+   * its user skills are under `$VAR/.agents/skills` when it is set (Gemini's GEMINI_CLI_HOME).
+   */
+  homeVar?: string;
+}
+
 /** Skills in the shared `.agents/skills` directory, for every harness that reads it. */
-export function sharedSkills(options: Omit<SkillsDirOptions, "portable"> = {}): Handler<"skill"> {
-  return skillsDir(AGENTS_SKILLS, { ...options, portable: true });
+export function sharedSkills(options: SharedSkillsOptions = {}): Handler<"skill"> {
+  const { homeVar, ...rest } = options;
+  const dir: ScopedLoc = homeVar
+    ? {
+        ...AGENTS_SKILLS,
+        user: (ctx) => {
+          const home = ctx.env.vars[homeVar];
+          return home && isAbsolute(home) ? join(home, ".agents", "skills") : AGENTS_SKILLS.user!(ctx);
+        },
+      }
+    : AGENTS_SKILLS;
+  return skillsDir(dir, { ...rest, portable: true });
 }
