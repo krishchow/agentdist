@@ -1,5 +1,5 @@
 import { defineHarness, unsupported } from "../harness/define";
-import { dialect, proseToolRef } from "../harness/dialect";
+import { dialect, proseSkillRef, proseToolRef } from "../harness/dialect";
 import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../harness/locations";
 import { commandsAsSkills } from "../surfaces/commands";
 import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks";
@@ -13,7 +13,8 @@ export const goose = defineHarness({
   label: "Goose",
   configRoot: { user: home, local: ".goose" },
   detect: configRootExists(home),
-  dialect: dialect({ toolRef: proseToolRef, skillRef: (name) => `/skills ${name}` }),
+  // `/skills` only lists skills; the model loads one with its load_skill tool, so a skill is named.
+  dialect: dialect({ toolRef: proseToolRef, skillRef: proseSkillRef }),
   kinds: {
     skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
     agent: unsupported("Goose runs subagents from recipes, not agent definition files"),

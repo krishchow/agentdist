@@ -63,7 +63,7 @@ path was checked against, are in the harness's file.
 | Qwen Code | mcp__server__tool | /name |
 | Amp | `tool` (server MCP tool) | the `name` skill |
 | pi | mcp__server__tool | /skill:name |
-| Goose | `tool` (server MCP tool) | /skills name |
+| Goose | `tool` (server MCP tool) | the `name` skill |
 | Zed | mcp:server:tool | /name |
 
 Content in the shared `.agents/skills` directory is rendered in a portable dialect instead (the

@@ -355,7 +355,7 @@ async function runCell(adapter, scope, opts) {
       }
 
       // 7. Invoke the command, where one was placed and the harness can take a prompt.
-      if (result.placed.includes("command:signal") && !adapter.drive) {
+      if (result.placed.includes("command:signal") && !adapter.drive && adapter.command !== null) {
         writeFileSync(join(PROBE_DIR, "mock-mode"), "text");
         const commandMarks = logMarks();
         const argv = adapter.command
