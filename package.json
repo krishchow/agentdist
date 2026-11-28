@@ -1,6 +1,6 @@
 {
   "name": "agentdist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install engine for agent packages: write skills, subagents, commands, hooks and MCP servers once, install them into any AI coding harness at repository or user scope.",
   "keywords": [
     "agent-skills",
