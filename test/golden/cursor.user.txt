@@ -1,4 +1,5 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Cursor; it gets the harness's default tools
+[next]  Cursor's CLI does not load user-level subagents; the editor does. Install at project scope for both
 
 === ~/.cursor/mcp.json (json) → mcpServers . demo
 {

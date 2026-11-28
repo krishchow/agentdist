@@ -13,9 +13,11 @@ export const goose = {
   }),
   async introspect(_cell, ctx) {
     const skills = await ctx.run(["goose", "skills", "list"]);
-    ctx.scanNames(skills.stdout, ["skill"], "goose skills list");
+    // A command is a skill, invoked as `/skills <name>`.
+    ctx.scanNames(skills.stdout, ["skill", "command"], "goose skills list");
   },
   session: (_cell, prompt) => ["goose", "run", "--no-session", "-q", "-t", prompt],
+  command: (cell, name, arg) => goose.session(cell, `/skills ${name} ${arg}`),
   listed: ["skill", "mcpServer"],
   hookEvents: ALL_EVENTS,
 };

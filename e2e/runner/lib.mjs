@@ -445,6 +445,8 @@ export const INSTALLED_NAMES = {
 /** What an invoked command must turn into: its body, with the argument in place of $ARGUMENTS. */
 export const COMMAND_ARG = "PROBEARG";
 export const COMMAND_EXPANDED = `PROBE_COMMAND_SIGNAL_BODY with ${COMMAND_ARG}.`;
+/** What agentdist writes for `$ARGUMENTS` where a harness has no placeholder and appends them. */
+export const COMMAND_APPENDED = "PROBE_COMMAND_SIGNAL_BODY with the arguments given after the command.";
 
 /**
  * Look for each artifact's installed name in a listing command's text output. Paths are taken out
@@ -482,9 +484,18 @@ export function scanNameList(evidence, names, placed, kinds, source) {
 export function scanCommand(evidence, llm, source = "invoked command") {
   const bodies = llm.map((r) => JSON.stringify(r.body));
   const expanded = bodies.some((b) => b.includes(COMMAND_EXPANDED));
+  // With no placeholder, the body says where the arguments are, and they arrive in the same request.
+  const appended = bodies.some((b) => b.includes(COMMAND_APPENDED) && b.includes(COMMAND_ARG));
   const body = bodies.some((b) => b.includes("PROBE_COMMAND_SIGNAL_BODY"));
   if (expanded)
     evidence.add("command:signal", true, source, "its body reached the model with the argument substituted");
+  else if (appended)
+    evidence.add(
+      "command:signal",
+      true,
+      source,
+      "its body reached the model, with the argument given after it",
+    );
   else if (body)
     evidence.add(
       "command:signal",

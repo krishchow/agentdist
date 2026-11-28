@@ -1,3 +1,5 @@
+[next]  Gemini CLI starts MCP servers, yours included, only in a folder you have trusted
+
 === ~/.gemini/settings.json (json) → mcpServers . demo
 {
   "command": "npx",

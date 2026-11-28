@@ -26,7 +26,7 @@ export const cline = defineHarness({
     // Workflows.
     command: markdownCommands(
       { user: inConfig("workflows"), local: inConfig("workflows") },
-      { frontmatter: () => ({}) },
+      { frontmatter: () => ({}), argumentsPlaceholder: null },
     ),
     // Cline has no project-level MCP file.
     mcpServer: mcpConfig({

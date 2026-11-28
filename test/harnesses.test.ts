@@ -122,6 +122,9 @@ describe("harnesses installed together", () => {
       ".github/mcp.json",
       ".mcp.json",
     ]);
-    expect(plan.diagnostics.filter((d) => d.level === "warn")).toEqual([]);
+    // Nothing is shared with Claude Code's entries, so neither is said to win over the other.
+    expect(
+      plan.diagnostics.filter((d) => d.level === "warn" && d.message.includes("is shared with")),
+    ).toEqual([]);
   });
 });

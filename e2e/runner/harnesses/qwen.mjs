@@ -29,7 +29,7 @@ export const qwen = {
       join(cell.home, ".qwen", "trustedFolders.json"),
       JSON.stringify({ [cell.repo]: "TRUST_FOLDER" }),
     );
-    ctx.note("turned on folder trust and trusted the project in ~/.qwen/trustedFolders.json");
+    ctx.note("turned on folder trust and trusted the project in ~/.qwen/trustedFolders.json", ["hook"]);
   },
   async introspect(_cell, ctx) {
     await ctx.run(["qwen", "mcp", "list"]);

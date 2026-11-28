@@ -1,7 +1,8 @@
-import { defineHarness, unsupported } from "../harness/define";
+import { defineHarness } from "../harness/define";
 import { CANONICAL_TOOLS, dialect } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
+import { commandsAsSkills } from "../surfaces/commands";
 import { hooksDir } from "../surfaces/hooks";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { skillsDir } from "../surfaces/skills";
@@ -44,7 +45,8 @@ export const copilot = defineHarness({
       { user: inConfig("agents"), local: inConfig("agents") },
       { ext: ".agent.md", tools: "list" },
     ),
-    command: unsupported("no command directory of its own; ship it as a skill"),
+    // No command directory of its own; a skill is its slash command.
+    command: commandsAsSkills(skillsDir({ user: inConfig("skills"), local: inConfig("skills") })),
     mcpServer: mcpConfig({
       // Not the root .mcp.json, although Copilot reads it: Claude Code owns that file's entries, and
       // the two need different ones. VS Code's Copilot harness reads only the root file and the
@@ -90,6 +92,13 @@ export const copilot = defineHarness({
       }),
     }),
   },
+  notes: [
+    {
+      kinds: ["mcpServer", "hook"],
+      scope: "local",
+      text: "GitHub Copilot loads the project's MCP servers and hooks only once you trust the folder",
+    },
+  ],
   sources: [
     "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers",
     "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills",

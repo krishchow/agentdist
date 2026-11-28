@@ -18,11 +18,12 @@ export const copilot = {
   async consent(cell, ctx) {
     if (cell.scope !== "local") return;
     writeFile(join(cell.home, ".copilot", "config.json"), JSON.stringify({ trustedFolders: [cell.repo] }));
-    ctx.note("trusted the project in ~/.copilot/config.json");
+    ctx.note("trusted the project in ~/.copilot/config.json", ["mcpServer", "hook"]);
   },
   async introspect(_cell, ctx) {
     const skills = await ctx.run(["copilot", "skill", "list"]);
-    ctx.scanNames(skills.stdout, ["skill"], "copilot skill list");
+    // A command is a skill.
+    ctx.scanNames(skills.stdout, ["skill", "command"], "copilot skill list");
     await ctx.run(["copilot", "mcp", "list"]);
   },
   session: (_cell, prompt) => ["copilot", "-p", prompt, "--allow-all-tools", "--no-auto-update"],

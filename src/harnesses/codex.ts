@@ -1,10 +1,11 @@
-import { defineHarness, type Skip, unsupported } from "../harness/define";
+import { defineHarness, type Skip } from "../harness/define";
 import { dialect, noToolGrants } from "../harness/dialect";
 import { configRootExists, dotHome, inConfig } from "../harness/locations";
 import type { HttpServerNode, McpServerNode, StdioServerNode } from "../ir/nodes";
 import { envRefs } from "../ir/templates";
 import type { JsonValue } from "../ops/types";
 import { tomlAgents } from "../surfaces/agents";
+import { commandsAsSkills } from "../surfaces/commands";
 import { claudeStyleHook, hooksConfig } from "../surfaces/hooks";
 import { compactEntry, mcpConfig } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
@@ -70,7 +71,8 @@ export const codex = defineHarness({
       { user: inConfig("agents"), local: inConfig("agents") },
       { fields: ({ name, description, prompt }) => ({ name, description, developer_instructions: prompt }) },
     ),
-    command: unsupported("custom prompts are deprecated in Codex and user-only; ship it as a skill"),
+    // Custom prompts are deprecated and user-only; a skill is the slash command (`$name`).
+    command: commandsAsSkills(sharedSkills()),
     mcpServer: mcpConfig({
       // The project file is read only once the user has trusted the project.
       file: { user: inConfig("config.toml"), local: inConfig("config.toml") },
@@ -96,11 +98,21 @@ export const codex = defineHarness({
       projectDir: "$(git rev-parse --show-toplevel)",
       // Edits are one apply_patch tool, which a matcher may also call Edit or Write.
       tools: { Bash: "Bash", Edit: "Edit", Write: "Write", Read: null, Glob: null, Grep: null },
-      advice: "Codex runs a new hook only after you review and trust it with /hooks",
       keyPath: (hook) => ["hooks", hook.event],
       item: claudeStyleHook,
     }),
   },
+  notes: [
+    {
+      kinds: ["agent", "mcpServer", "hook"],
+      scope: "local",
+      text: "Codex loads a project's .codex subagents, MCP servers and hooks only once you trust the project",
+    },
+    {
+      kinds: ["hook"],
+      text: "Codex runs a new or changed hook only after you review and trust it with /hooks",
+    },
+  ],
   sources: [
     "https://learn.chatgpt.com/docs/extend/mcp",
     "https://learn.chatgpt.com/docs/build-skills",

@@ -1,6 +1,6 @@
 import { isAbsolute, join, relative, sep } from "node:path";
 import type { Dialect, Env, HarnessDef, PlanCtx, Skip } from "../harness/define";
-import { installedName, type Node, nodeId, type Package } from "../ir/nodes";
+import { installedName, type Node, type NodeKind, nodeId, type Package } from "../ir/nodes";
 import { type Ref, replaceRefs } from "../ir/refs";
 import type { Scope } from "../schema/manifest";
 import {
@@ -103,6 +103,7 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
       diagnostics.push({ level, harness: harness.id, node: current ? nodeId(current) : undefined, message });
     };
     const ctx = makeCtx(pkg, harness, scope, env, (message) => note("warn", message));
+    const installed = new Set<NodeKind>();
 
     for (const node of pkg.nodes) {
       current = node;
@@ -114,6 +115,19 @@ export function planInstall(pkg: Package, harnesses: HarnessDef[], scope: Scope,
       }
       const claim: Claim = { harness: harness.id, node: nodeId(node) };
       for (const op of result) proposed.push({ op, claim, harness });
+      installed.add(node.kind);
+    }
+    current = undefined;
+    // Next steps, for what this harness actually got at this scope.
+    for (const n of harness.notes ?? []) {
+      if (n.scope && n.scope !== scope) continue;
+      if (n.kinds && !n.kinds.some((kind) => installed.has(kind))) continue;
+      diagnostics.push({
+        level: "next",
+        harness: harness.id,
+        message: n.text,
+        ...(n.kinds ? { kinds: n.kinds } : {}),
+      });
     }
   }
 

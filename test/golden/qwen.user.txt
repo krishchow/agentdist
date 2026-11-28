@@ -1,5 +1,3 @@
-[warn] hook:guard Qwen Code asks you to approve a project's hooks once before it runs them
-
 === ~/.qwen/settings.json (json) → mcpServers . demo
 {
   "command": "npx",

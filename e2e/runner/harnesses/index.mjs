@@ -20,7 +20,9 @@
  *   mcpHandshake   the server call that proves an MCP server loaded (default "tools/list")
  *   hookEvents     canonical events a session can make fire
  *   command(cell, name, arg)  argv to invoke a slash command (default: a session with "/name arg")
- *   consentFlags   consent given by a flag or variable on every run, listed in the report
+ *   consentFlags   consent given by a flag or variable on every run: { text, kinds?, scope? }.
+ *                  Each one, like each ctx.note(text, kinds) a consent step makes, must be covered
+ *                  by a next step agentdist printed for those kinds, or the cell's notes check fails
  *   known          `${scope}/${node}` → { because, detail }: a failure that is understood and
  *                  tracked. It is an xfail only while every failing check matches `detail`
  *   leftovers      a `pkill -f` pattern for what the harness leaves running after a cell

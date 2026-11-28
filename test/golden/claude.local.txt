@@ -1,3 +1,5 @@
+[next]  Claude Code asks each person to approve the project's .mcp.json servers the first time they open it
+
 === .mcp.json (json) → mcpServers . demo
 {
   "type": "stdio",

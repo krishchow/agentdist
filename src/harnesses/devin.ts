@@ -2,10 +2,11 @@ import { defineHarness } from "../harness/define";
 import { dialect, noToolGrants, proseToolRef } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
 import { markdownAgents } from "../surfaces/agents";
-import { markdownCommands } from "../surfaces/commands";
+import { commandsAsSkills } from "../surfaces/commands";
 import { anchored, CLAUDE_HOOKS, claudeStyleHook, hooksConfig } from "../surfaces/hooks";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
+import { skillsDir } from "../surfaces/skills";
 
 const home = xdgConfig("devin");
 
@@ -24,7 +25,9 @@ export const devin = defineHarness({
       { folderFile: "AGENT.md" },
     ),
     // Workflows have no documented user-level directory under the Devin config home.
-    command: markdownCommands({ local: inConfig("workflows") }),
+    // The CLI's slash commands are skills; it does not read .devin/workflows, and `devin migrate
+    // workflows` turns workflows into skills. In Devin's own directories, not the shared one.
+    command: commandsAsSkills(skillsDir({ user: inConfig("skills"), local: inConfig("skills") })),
     mcpServer: mcpConfig({
       file: { user: inConfig("mcp_config.json"), local: inConfig("mcp_config.json") },
       format: "json",
@@ -53,6 +56,12 @@ export const devin = defineHarness({
       item: (hook) => claudeStyleHook({ ...hook, tools: hook.tools ? [anchored(hook.tools)] : undefined }),
     }),
   },
+  notes: [
+    {
+      scope: "local",
+      text: "Devin runs in a project only once you have trusted it in an interactive session",
+    },
+  ],
   sources: [
     "https://docs.devin.ai/cli/extensibility/mcp/configuration.md",
     "https://docs.devin.ai/cli/extensibility/skills/overview.md",

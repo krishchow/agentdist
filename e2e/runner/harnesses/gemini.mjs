@@ -10,7 +10,15 @@ export const gemini = {
   version: ["gemini", "--version"],
   mock: "llm",
   consentFlags: [
-    "GEMINI_CLI_TRUST_WORKSPACE=true trusts the folder; untrusted, Gemini disables every MCP server",
+    {
+      text: "GEMINI_CLI_TRUST_WORKSPACE=true trusts the folder; untrusted, Gemini disables every MCP server",
+      kinds: ["mcpServer"],
+    },
+    {
+      text: "GEMINI_CLI_TRUST_WORKSPACE=true also loads the project's skills, subagents and hooks",
+      scope: "local",
+      kinds: ["skill", "agent", "hook"],
+    },
   ],
   env: () => ({
     GEMINI_API_KEY: "probe",
@@ -38,7 +46,7 @@ export const gemini = {
       join(cell.home, ".gemini", "acknowledgments", "agents.json"),
       JSON.stringify({ [cell.repo]: { "probe-scout": hash } }),
     );
-    ctx.note("acknowledged the project subagent probe-scout (agentdist does not mention this step)");
+    ctx.note("acknowledged the project subagent probe-scout", ["agent"]);
   },
   async introspect(_cell, ctx) {
     const skills = await ctx.run(["gemini", "skills", "list"]);

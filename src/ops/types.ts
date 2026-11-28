@@ -4,6 +4,8 @@
  * backs up and rolls back.
  */
 
+import type { NodeKind } from "../ir/nodes";
+
 export type ConfigFormat = "json" | "jsonc" | "toml" | "yaml";
 
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
@@ -76,10 +78,13 @@ export interface PlannedItem extends ConfigItemOp {
 }
 
 export interface Diagnostic {
-  level: "info" | "warn";
+  /** `info`: something skipped; `warn`: something changed or lost; `next`: what the user does now. */
+  level: "info" | "warn" | "next";
   harness: string;
   node?: string;
   message: string;
+  /** For `next`: the kinds of artifact it is about, or every kind when absent. */
+  kinds?: NodeKind[];
 }
 
 export interface Plan {

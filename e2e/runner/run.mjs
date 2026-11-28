@@ -181,7 +181,8 @@ async function runCell(adapter, scope, opts) {
   const result = {
     harness: adapter.id,
     scope,
-    consent: [...(adapter.consentFlags ?? [])],
+    // Every approval the runner gave: { text, kinds }, kinds absent meaning the whole install.
+    consent: (adapter.consentFlags ?? []).filter((c) => !c.scope || c.scope === scope),
     notes: [],
     warnings: [],
     errors: [],
@@ -235,7 +236,7 @@ async function runCell(adapter, scope, opts) {
       return result.placed;
     },
     run: exec,
-    note: (text) => result.consent.push(text),
+    note: (text, kinds) => result.consent.push({ text, kinds }),
     append: (file, text) => appendFileSync(file, text),
     scanNames: (output, kinds, source) => scanNames(evidence, output, result.placed, kinds, source),
     scanNameList: (names, kinds, source) => scanNameList(evidence, names, result.placed, kinds, source),
@@ -298,12 +299,30 @@ async function runCell(adapter, scope, opts) {
       else result.warnings.push(d.message);
     }
     result.placed = ALL_NODES.filter((n) => !(n in result.skipped));
+    result.nextSteps = (report.diagnostics ?? []).filter(
+      (d) => d.harness === adapter.id && d.level === "next",
+    );
     const skillFile = report.actions.find(
       (a) => a.node === "skill:beacon" && a.target.endsWith("SKILL.md"),
     )?.target;
 
     // 4. What a user approves once.
     await adapter.consent?.(cell, ctx);
+
+    // Every approval the runner had to give must be one agentdist told the user about: a note for
+    // the same kinds, or, for an approval of the whole project, a note about the whole install.
+    const kindsPlaced = new Set(result.placed.map((n) => n.split(":")[0]));
+    const needed = result.consent.filter((c) => !c.kinds || c.kinds.some((k) => kindsPlaced.has(k)));
+    const said = (c) =>
+      result.nextSteps.some((n) =>
+        c.kinds ? !n.kinds || n.kinds.some((k) => c.kinds.includes(k)) : !n.kinds,
+      );
+    const unsaid = needed.filter((c) => !said(c));
+    result.checks.notes = !needed.length
+      ? { status: "skipped", detail: "no approval was needed" }
+      : unsaid.length
+        ? { status: "fail", detail: `no next step tells the user: ${unsaid.map((c) => c.text).join("; ")}` }
+        : { status: "pass", detail: "every approval the runner gave is a next step agentdist printed" };
 
     // 5. Model-free introspection.
     const introMarks = logMarks();
@@ -442,7 +461,7 @@ const SHORT = {
   "hook:stop": "Stop",
   "hook:session-end": "SessionEnd",
 };
-const CHECKS = { toolRef: "tool names", roundTrip: "round trip" };
+const CHECKS = { toolRef: "tool names", roundTrip: "round trip", notes: "next steps" };
 
 const failed = (r) =>
   r.errors.length > 0 ||
@@ -477,7 +496,8 @@ function markdown(results, versions) {
       continue;
     lines.push(`### ${r.harness} at ${r.scope} scope`, "");
     for (const e of r.errors) lines.push(`- 🛑 ${e}`);
-    for (const n of r.consent) lines.push(`- consent: ${n}`);
+    for (const c of r.consent) lines.push(`- consent: ${c.text}`);
+    for (const n of r.nextSteps ?? []) lines.push(`- agentdist said next: ${n.message}`);
     for (const n of r.notes) lines.push(`- note: ${n}`);
     for (const w of r.warnings) lines.push(`- agentdist warned: ${w}`);
     for (const [k, c] of badChecks) lines.push(`- ❌ ${CHECKS[k]}: ${c.detail}`);

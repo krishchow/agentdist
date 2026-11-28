@@ -55,8 +55,6 @@ export interface HookEventsOptions {
    * tool lists use. A tool mapped to `null` cannot be matched.
    */
   tools?: Record<string, string | null>;
-  /** Something the user has to do before the harness will run an installed hook. */
-  advice?: string;
 }
 
 function toNative(node: HookNode, ctx: PlanCtx, options: HookEventsOptions): NativeHook | string {
@@ -108,7 +106,6 @@ export function hooksConfig(options: HooksConfigOptions): Handler<"hook"> {
       if (!file) return { skip: `no ${ctx.scope}-scope hook configuration` };
       const hook = toNative(node, ctx, options);
       if (typeof hook === "string") return { skip: hook };
-      if (options.advice) ctx.warn(options.advice);
       const path = file(ctx);
       const ops: Op[] = hookFiles(ctx).ops;
       ops.push({
@@ -143,7 +140,6 @@ export function hooksDir(options: HookFilesOptions): Handler<"hook"> {
       if (!dir) return { skip: `no ${ctx.scope}-scope hook directory` };
       const hook = toNative(node, ctx, options);
       if (typeof hook === "string") return { skip: hook };
-      if (options.advice) ctx.warn(options.advice);
       const { name, content } = options.file(hook);
       return [
         ...hookFiles(ctx).ops,

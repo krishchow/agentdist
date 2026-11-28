@@ -1,4 +1,5 @@
 [info] agent:reviewer skipped: Cline does not document a subagent file format
+[warn] command:ship command ship: Cline has no argument placeholder and gives the model the arguments after the command's text, so $ARGUMENTS is written as "the arguments given after the command"
 [info] mcpServer:demo skipped: no local-scope MCP configuration
 [info] mcpServer:demo-remote skipped: no local-scope MCP configuration
 [info] hook:guard skipped: Cline hooks are one script per event with their own input and output contract
@@ -36,4 +37,4 @@ No references here, so this file installs byte for byte.
 
 === .cline/workflows/demo-ship.md
 
-Ship $ARGUMENTS using /demo-ship-it.
+Ship the arguments given after the command using /demo-ship-it.

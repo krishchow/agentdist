@@ -36,7 +36,10 @@ export const cursor = {
   listed: ["skill", "agent", "mcpServer"],
   // MCP tools are sent by name, without their descriptions.
   markers: { "mcpServer:probe": "stdio_listed", "mcpServer:probe-remote": "http_listed" },
-  consentFlags: ["--trust trusts the workspace", "--approve-mcps approves the project's MCP servers"],
+  consentFlags: [
+    { text: "--trust trusts the workspace", scope: "local" },
+    { text: "--approve-mcps approves the project's MCP servers", scope: "local", kinds: ["mcpServer"] },
+  ],
   // No model turn, so no tool call and no end of turn: only the session hooks can fire.
   hookEvents: ["SessionStart"],
   known: {

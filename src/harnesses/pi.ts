@@ -36,6 +36,12 @@ export const pi = defineHarness({
     }),
     hook: unsupported("pi hooks are TypeScript extensions, not commands"),
   },
+  notes: [
+    {
+      scope: "local",
+      text: "pi loads a project's skills, prompts and MCP servers only once you trust the project",
+    },
+  ],
   sources: [
     "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/mcp.md",
     "https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md",

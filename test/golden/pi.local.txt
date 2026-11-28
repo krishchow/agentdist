@@ -1,6 +1,7 @@
 [info] agent:reviewer skipped: pi has no subagent definitions
 [info] hook:guard skipped: pi hooks are TypeScript extensions, not commands
 [info] hook:greet skipped: pi hooks are TypeScript extensions, not commands
+[next]  pi loads a project's skills, prompts and MCP servers only once you trust the project
 
 === .pi/mcp.json (json) → mcpServers . demo
 {

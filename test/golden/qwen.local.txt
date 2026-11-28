@@ -1,4 +1,4 @@
-[warn] hook:guard Qwen Code asks you to approve a project's hooks once before it runs them
+[next]  Qwen Code runs a project's hooks only with folder trust on and the folder trusted
 
 === .qwen/settings.json (json) → mcpServers . demo
 {

@@ -9,7 +9,7 @@ export const amp = {
   async consent(cell, ctx) {
     if (cell.scope !== "local") return;
     for (const server of ["probe", "probe-remote"]) await ctx.run(["amp", "mcp", "approve", server]);
-    ctx.note("approved the project MCP servers with amp mcp approve");
+    ctx.note("approved the project MCP servers with amp mcp approve", ["mcpServer"]);
   },
   async introspect(_cell, ctx) {
     const skills = await ctx.run(["amp", "skill", "list", "--json"]);
@@ -24,7 +24,8 @@ export const amp = {
     }
     ctx.scanNameList(
       (listing.skills ?? []).map((s) => s.name),
-      ["skill"],
+      // A command is a skill.
+      ["skill", "command"],
       "amp skill list",
     );
     // Starts every MCP server and lists its tools, which the server logs record.

@@ -48,6 +48,13 @@ export const claude = defineHarness({
       item: claudeStyleHook,
     }),
   },
+  notes: [
+    {
+      kinds: ["mcpServer"],
+      scope: "local",
+      text: "Claude Code asks each person to approve the project's .mcp.json servers the first time they open it",
+    },
+  ],
   sources: [
     "https://code.claude.com/docs/en/skills",
     "https://code.claude.com/docs/en/sub-agents",

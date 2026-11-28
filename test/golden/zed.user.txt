@@ -1,5 +1,5 @@
 [info] agent:reviewer skipped: Zed has no subagent definition files
-[info] command:ship skipped: Zed has no command files; a skill is its slash command
+[warn] command:ship command ship: Zed has no argument placeholder and gives the model the arguments after the command's text, so $ARGUMENTS is written as "the arguments given after the command"
 [info] mcpServer:demo-remote skipped: Zed cannot read DEMO_API_TOKEN from the environment for a remote server's headers; add the header to its config by hand
 [info] hook:guard skipped: Zed has no lifecycle hooks
 [info] hook:greet skipped: Zed has no lifecycle hooks
@@ -45,3 +45,13 @@ description: Ship the thing.
 # Ship it
 
 No references here, so this file installs byte for byte.
+
+=== ~/.agents/skills/demo-ship/SKILL.md
+---
+name: demo-ship
+description: Ship the current change
+argument-hint: "[target]"
+disable-model-invocation: true
+---
+
+Ship the arguments given after the command using the `demo-ship-it` skill.

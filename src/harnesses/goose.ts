@@ -1,6 +1,7 @@
 import { defineHarness, unsupported } from "../harness/define";
 import { dialect, proseToolRef } from "../harness/dialect";
 import { configRootExists, inConfig, inHome, inProject, xdgConfig } from "../harness/locations";
+import { commandsAsSkills } from "../surfaces/commands";
 import { anchored, claudeStyleHook, hooksDir } from "../surfaces/hooks";
 import { compactEntry, headerEnv, mcpConfig } from "../surfaces/mcp";
 import { CLAUDE_SKILLS, sharedSkills } from "../surfaces/shared";
@@ -16,7 +17,8 @@ export const goose = defineHarness({
   kinds: {
     skill: sharedSkills({ alsoReads: [CLAUDE_SKILLS] }),
     agent: unsupported("Goose runs subagents from recipes, not agent definition files"),
-    command: unsupported("Goose slash commands point at recipes, which a package cannot express yet"),
+    // Goose's own slash commands point at recipes; a skill is invoked with `/skills <name>`.
+    command: commandsAsSkills(sharedSkills({ alsoReads: [CLAUDE_SKILLS] })),
     // An MCP server is an "extension", configured for the user only.
     mcpServer: mcpConfig({
       file: { user: inConfig("config.yaml") },

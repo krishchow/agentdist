@@ -118,8 +118,11 @@ function printResult(result: ApplyResult, write: (text: string) => void, verb: s
 
   const skipped = result.diagnostics.filter((d) => d.level === "info");
   const warnings = result.diagnostics.filter((d) => d.level === "warn");
+  const steps = result.diagnostics.filter((d) => d.level === "next");
   for (const d of skipped) write(`  · ${d.harness}: ${d.node ?? ""} ${d.message}\n`);
   for (const d of warnings) write(`  ! ${d.harness}: ${d.message}\n`);
+  if (steps.length > 0) write("Next steps:\n");
+  for (const d of steps) write(`  → ${d.harness}: ${d.message}\n`);
 }
 
 /**

@@ -1,6 +1,7 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Codex; it gets the harness's default tools
-[info] command:ship skipped: custom prompts are deprecated in Codex and user-only; ship it as a skill
-[warn] hook:guard Codex runs a new hook only after you review and trust it with /hooks
+[warn] command:ship command ship: Codex has no argument placeholder and gives the model the arguments after the command's text, so $ARGUMENTS is written as "the arguments given after the command"
+[next]  Codex loads a project's .codex subagents, MCP servers and hooks only once you trust the project
+[next]  Codex runs a new or changed hook only after you review and trust it with /hooks
 
 === .codex/config.toml (toml) → mcp_servers . demo
 {
@@ -83,6 +84,16 @@ description: Ship the thing.
 # Ship it
 
 No references here, so this file installs byte for byte.
+
+=== .agents/skills/demo-ship/SKILL.md
+---
+name: demo-ship
+description: Ship the current change
+argument-hint: "[target]"
+disable-model-invocation: true
+---
+
+Ship the arguments given after the command using the `demo-ship-it` skill.
 
 === .codex/agents/demo-reviewer.toml
 name = "demo-reviewer"

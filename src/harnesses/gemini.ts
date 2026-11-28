@@ -88,6 +88,22 @@ export const gemini = defineHarness({
       }),
     }),
   },
+  notes: [
+    {
+      kinds: ["mcpServer"],
+      text: "Gemini CLI starts MCP servers, yours included, only in a folder you have trusted",
+    },
+    {
+      kinds: ["skill", "agent", "hook"],
+      scope: "local",
+      text: "Gemini CLI loads the project's skills, subagents and hooks only once you trust the folder",
+    },
+    {
+      kinds: ["agent"],
+      scope: "local",
+      text: "Gemini CLI also asks you to acknowledge each project subagent, and again whenever it changes",
+    },
+  ],
   sources: [
     "https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md",
     "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md",

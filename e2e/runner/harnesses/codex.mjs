@@ -27,7 +27,7 @@ export const codex = {
     if (cell.scope !== "local") return;
     const file = join(cell.home, ".codex", "config.toml");
     ctx.append(file, `\n[projects."${cell.repo}"]\ntrust_level = "trusted"\n`);
-    ctx.note("trusted the project in ~/.codex/config.toml");
+    ctx.note("trusted the project in ~/.codex/config.toml", ["agent", "mcpServer", "hook"]);
   },
   async introspect(_cell, ctx) {
     const prompt = await ctx.run(["codex", "debug", "prompt-input", "hi"]);
@@ -35,7 +35,9 @@ export const codex = {
     ctx.scanModelText(prompt.stdout, ["skill"], "codex debug prompt-input");
     await ctx.run(["codex", "mcp", "list", "--json"]);
   },
-  consentFlags: ["--dangerously-bypass-hook-trust stands in for reviewing each hook in /hooks"],
+  consentFlags: [
+    { text: "--dangerously-bypass-hook-trust stands in for reviewing each hook in /hooks", kinds: ["hook"] },
+  ],
   session: (_cell, prompt) => [
     "codex",
     "exec",
@@ -46,6 +48,8 @@ export const codex = {
     "--json",
     prompt,
   ],
+  // A command is a skill, invoked as `$name`.
+  command: (cell, name, arg) => codex.session(cell, `$${name} ${arg}`),
   listed: ["skill", "agent", "mcpServer"],
   hookEvents: ALL_EVENTS,
 };

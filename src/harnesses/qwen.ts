@@ -57,7 +57,6 @@ export const qwen = defineHarness({
       projectDir: "$QWEN_PROJECT_DIR",
       // A matcher made only of Claude Code's tool names is accepted as it is.
       tools: Object.fromEntries(CANONICAL_TOOLS.map((tool) => [tool, tool])),
-      advice: "Qwen Code asks you to approve a project's hooks once before it runs them",
       keyPath: (hook) => ["hooks", hook.event],
       item: (hook) => ({
         ...(hook.tools ? { matcher: hook.tools.join("|") } : {}),
@@ -72,6 +71,13 @@ export const qwen = defineHarness({
       }),
     }),
   },
+  notes: [
+    {
+      kinds: ["hook"],
+      scope: "local",
+      text: "Qwen Code runs a project's hooks only with folder trust on and the folder trusted",
+    },
+  ],
   sources: [
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/mcp.md",
     "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md",

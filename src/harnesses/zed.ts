@@ -1,6 +1,7 @@
 import { defineHarness, unsupported } from "../harness/define";
 import { dialect } from "../harness/dialect";
 import { configRootExists, inConfig, xdgConfig } from "../harness/locations";
+import { commandsAsSkills } from "../surfaces/commands";
 import { httpEntry, mcpConfig, stdioEntry } from "../surfaces/mcp";
 import { sharedSkills } from "../surfaces/shared";
 
@@ -15,7 +16,8 @@ export const zed = defineHarness({
   kinds: {
     skill: sharedSkills(),
     agent: unsupported("Zed has no subagent definition files"),
-    command: unsupported("Zed has no command files; a skill is its slash command"),
+    // A skill is Zed's slash command.
+    command: commandsAsSkills(sharedSkills()),
     mcpServer: mcpConfig({
       // Zed does not document whether project settings may declare context servers, so only the
       // user's settings are written.

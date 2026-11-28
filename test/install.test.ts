@@ -483,3 +483,25 @@ describe("harnesses that share a directory", () => {
     expect(agent).not.toContain("color:");
   });
 });
+
+describe("next steps", () => {
+  it("says a harness's note only for its scope and for what was installed", () => {
+    const noted = {
+      ...claude,
+      id: "noted",
+      notes: [
+        { kinds: ["mcpServer" as const], scope: "local" as const, text: "approve the servers" },
+        { kinds: ["hook" as const], text: "review the hooks" },
+        { kinds: ["agent" as const], text: "never said: no agent is installed" },
+        { text: "always said" },
+      ],
+    };
+    const steps = (scope: "user" | "local", pkg: Package) =>
+      install({ pkg, harnesses: [noted], scope, env: sandbox({ DEMO_API_TOKEN: "t" }), dryRun: true })
+        .diagnostics.filter((d) => d.level === "next")
+        .map((d) => d.message);
+    const noAgents: Package = { ...demo(), nodes: demo().nodes.filter((n) => n.kind !== "agent") };
+    expect(steps("local", noAgents)).toEqual(["approve the servers", "review the hooks", "always said"]);
+    expect(steps("user", noAgents)).toEqual(["review the hooks", "always said"]);
+  });
+});

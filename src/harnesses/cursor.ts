@@ -59,6 +59,19 @@ export const cursor = defineHarness({
       }),
     }),
   },
+  notes: [
+    { scope: "local", text: "Cursor's CLI runs in a project only once you trust it" },
+    {
+      kinds: ["mcpServer"],
+      scope: "local",
+      text: "Cursor asks you to approve the project's MCP servers (or run `cursor-agent mcp enable <name>`)",
+    },
+    {
+      kinds: ["agent"],
+      scope: "user",
+      text: "Cursor's CLI does not load user-level subagents; the editor does. Install at project scope for both",
+    },
+  ],
   sources: [
     "https://cursor.com/docs/mcp",
     "https://cursor.com/docs/skills",

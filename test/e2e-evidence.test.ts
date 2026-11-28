@@ -196,6 +196,15 @@ describe("e2e evidence", () => {
       detail: expect.stringContaining("not substituted"),
     });
 
+    // A harness with no placeholder: the body points at the arguments, which follow it.
+    const appended = new Evidence();
+    scanCommand(appended, [
+      request(
+        "PROBE_COMMAND_SIGNAL_BODY with the arguments given after the command. Then use /probe-beacon.\n\nPROBEARG",
+      ),
+    ]);
+    expect(appended.for("command:signal")[0]!.ok).toBe(true);
+
     const missing = new Evidence();
     scanCommand(missing, [request("hello")]);
     expect(missing.for("command:signal")[0]!.detail).toContain("never reached");

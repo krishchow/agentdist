@@ -1,3 +1,7 @@
+[next]  Gemini CLI starts MCP servers, yours included, only in a folder you have trusted
+[next]  Gemini CLI loads the project's skills, subagents and hooks only once you trust the folder
+[next]  Gemini CLI also asks you to acknowledge each project subagent, and again whenever it changes
+
 === .gemini/settings.json (json) → mcpServers . demo
 {
   "command": "npx",

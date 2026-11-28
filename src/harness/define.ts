@@ -101,8 +101,22 @@ export interface HarnessDef {
    * because the harness relocates the files, as a plugin cache does.
    */
   showPath?: (abs: string, env: Env) => string;
+  /**
+   * What the user has to do, or should know, once something is installed: a one-time approval the
+   * harness asks for, or a limit on where it loads an artifact. Said after the install.
+   */
+  notes?: Note[];
   /** The documentation each path and shape in this file was checked against. */
   sources: string[];
+}
+
+/** A next step for the user, said when the install put something of `kinds` at `scope`. */
+export interface Note {
+  /** Omit to say it whatever was installed. */
+  kinds?: NodeKind[];
+  /** Omit for both scopes. */
+  scope?: Scope;
+  text: string;
 }
 
 export function defineHarness(def: HarnessDef): HarnessDef {

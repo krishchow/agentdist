@@ -1,4 +1,6 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Cursor; it gets the harness's default tools
+[next]  Cursor's CLI runs in a project only once you trust it
+[next]  Cursor asks you to approve the project's MCP servers (or run `cursor-agent mcp enable <name>`)
 
 === .cursor/mcp.json (json) → mcpServers . demo
 {

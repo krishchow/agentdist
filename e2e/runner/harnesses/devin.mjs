@@ -16,7 +16,8 @@ export const devin = {
   },
   async introspect(_cell, ctx) {
     const skills = await ctx.run(["devin", "skills", "list"]);
-    ctx.scanNames(skills.stdout, ["skill"], "devin skills list");
+    // A command is a skill.
+    ctx.scanNames(skills.stdout, ["skill", "command"], "devin skills list");
     const doctor = await ctx.run(["devin", "doctor"]);
     ctx.scanNames(doctor.stdout, ["agent"], "devin doctor");
     await ctx.run(["devin", "mcp", "list"]);
@@ -31,12 +32,12 @@ export const devin = {
   mcpHandshake: "initialize",
   toolCall: false,
   hookEvents: ["SessionStart", "UserPromptSubmit"],
-  consentFlags: ["--respect-workspace-trust false runs in a workspace never trusted interactively"],
-  known: {
-    "local/command:signal": {
-      because:
-        'The Devin CLI does not read .devin/workflows ("Unknown command"); possibly Devin Desktop only',
-      detail: "its body never reached the model",
+  // Needed at user scope too, but only because the runner's repository was never trusted: that
+  // is not something the install asks of the user.
+  consentFlags: [
+    {
+      text: "--respect-workspace-trust false runs in a workspace never trusted interactively",
+      scope: "local",
     },
-  },
+  ],
 };

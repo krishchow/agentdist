@@ -1,4 +1,6 @@
 [warn] agent:reviewer agent reviewer: its tool restrictions could not be expressed for Devin (Windsurf); it gets the harness's default tools
+[warn] command:ship command ship: Devin (Windsurf) has no argument placeholder and gives the model the arguments after the command's text, so $ARGUMENTS is written as "the arguments given after the command"
+[next]  Devin runs in a project only once you have trusted it in an interactive session
 
 === .devin/mcp_config.json (json) → mcpServers . demo
 {
@@ -85,10 +87,12 @@ description: Reviews a change before it ships.
 
 You review changes. Use `doctor` (demo MCP tool) to check the environment.
 
-=== .devin/workflows/demo-ship.md
+=== .devin/skills/demo-ship/SKILL.md
 ---
+name: demo-ship
 description: Ship the current change
 argument-hint: "[target]"
+disable-model-invocation: true
 ---
 
-Ship $ARGUMENTS using /demo-ship-it.
+Ship the arguments given after the command using /demo-ship-it.
